@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: >-
+  Do Nonlinear-Dynamical Signatures Add Anything to Return Moments?
+  Functional-Form Mis-specification of the Volatility Null in a
+  Controlled Discrimination Study
+message: "If you use this software, please cite it using these metadata."
+type: software
+authors:
+  - given-names: Danial
+    family-names: Adibi
+    orcid: "https://orcid.org/0009-0007-0393-2064"
+    email: danadibi1011110@gmail.com
+repository-code: "https://github.com/DanialAdibi/nonlinear-signatures-vs-garch"
+abstract: >-
+  A controlled simulation study testing whether nonlinear-dynamical
+  signatures of returns discriminate market models better than standard
+  return moments, finding that any advantage arises only when the
+  statistical null is mis-specified in the functional form of its
+  conditional-variance recursion (additive versus log).
+keywords:
+  - nonlinear time series
+  - recurrence quantification
+  - GARCH
+  - model discrimination
+  - agent-based models
+license: MIT
+date-released: "2026-06-09"
+version: "1.0.0"
