@@ -32,7 +32,7 @@ def feature_vector(returns, m=4, tau=1, rr=0.05, n_steps=20, fit_end=10,
     """Return an ordered dict of all features for one return series."""
     r = np.asarray(returns, float)
 
-    # Referee 1 -- moments
+    # Referee 1: moments
     acf_abs = autocorr(np.abs(r), (1, 5, 10))
     acf_ret = autocorr(r, (1, 2, 3, 5, 10))
     f = {
@@ -45,7 +45,7 @@ def feature_vector(returns, m=4, tau=1, rr=0.05, n_steps=20, fit_end=10,
         "acf_ret_max": float(np.nanmax(np.abs(acf_ret))),
     }
 
-    # Referee 2 -- nonlinear signatures (fixed embedding)
+    # Referee 2: nonlinear signatures (fixed embedding)
     ly = rosenstein(r, m=m, tau=tau, n_steps=n_steps, fit_start=0, fit_end=fit_end)
     d2 = correlation_dimension(r, m=m, tau=tau, max_n=max_n_d2)
     rq = recurrence_quant(r, m=m, tau=tau, rr=rr, max_n=max_n_rqa)

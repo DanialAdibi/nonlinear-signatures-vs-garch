@@ -84,11 +84,9 @@ def bds_bootstrap(x, m=2, eps_mult=1.0, max_n=2000, n_boot=999, rng=None):
     N = len(x)
     eps = eps_mult * np.std(x)
 
-    # observed statistics (asymptotic version kept for reference/comparison)
     asymp = bds_statistic(x, m=m, eps_mult=eps_mult, max_n=max_n)
     D_obs = _bds_discrepancy(x, m, eps)
 
-    # permutation null distribution of the discrepancy
     null = np.empty(n_boot)
     for b in range(n_boot):
         xp = rng.permutation(x)
@@ -96,7 +94,7 @@ def bds_bootstrap(x, m=2, eps_mult=1.0, max_n=2000, n_boot=999, rng=None):
 
     mu, sd = null.mean(), null.std()
     z_boot = (D_obs - mu) / sd if sd > 0 else np.nan
-    # two-sided p-value, centred on the permutation mean; +1 smoothing
+
     extreme = np.abs(null - mu) >= np.abs(D_obs - mu)
     p_value = (extreme.sum() + 1) / (n_boot + 1)
     crit_lo, crit_hi = np.percentile(null, [2.5, 97.5])

@@ -42,7 +42,7 @@ def _round_sig(x, sig=_FLOAT_SIG):
 
 def _canonical(tag):
     """Type-tagged, length-framed encoding -> unambiguous, collision-free."""
-    if isinstance(tag, bool):                  # bool before int (bool subclasses int)
+    if isinstance(tag, bool):
         body = "b:" + ("1" if tag else "0")
     elif isinstance(tag, (int, np.integer)):
         body = "i:" + str(int(tag))

@@ -75,25 +75,25 @@ def run(K=40, T=10000, alpha_lev=0.0):
     R = fw_returns(K, T, alpha_lev=alpha_lev)
     print(f"\ngenerated {len(R)} FW return paths\n")
 
-    # Fact 1 -- no linear autocorrelation of returns
+    # Fact 1: no linear autocorrelation of returns
     ac_max = [np.nanmax(np.abs(autocorr(r, (1, 2, 3, 5, 10)))) for r in R]
     m, s = mean_sd(ac_max)
     print(f"[Fact 1] max|ACF(returns)| lags1-10 : {m:.3f} +/- {s:.3f}   "
           f"({'PASS ~0' if m < 0.10 else 'CHECK'})")
 
-    # Fact 2 -- heavy tails, tail index in (2,5)
+    # Fact 2: heavy tails, tail index in (2,5)
     alpha = [hill_tail_index(r) for r in R]
     m, s = mean_sd(alpha)
     print(f"[Fact 2] Hill tail index alpha      : {m:.2f} +/- {s:.2f}   "
           f"({'PASS in (2,5)' if 2 < m < 5 else 'CHECK'})")
 
-    # Fact 3 -- gain/loss asymmetry (skewness); FW expected ~0
+    # Fact 3: gain/loss asymmetry (skewness); FW expected ~0
     sk = [float(stats.skew(r)) for r in R]
     m, s = mean_sd(sk)
     print(f"[Fact 3] skewness                   : {m:+.3f} +/- {s:.3f}   "
           f"({'~0 => SYMMETRIC (no gain/loss asymmetry, as expected)' if abs(m) < 0.2 else 'asymmetric'})")
 
-    # Fact 4 -- aggregational Gaussianity (excess kurtosis falls with horizon)
+    # Fact 4: aggregational Gaussianity (excess kurtosis falls with horizon)
     print(f"[Fact 4] aggregational Gaussianity (excess kurtosis by horizon):")
     prev = None
     monotone = True
@@ -106,7 +106,7 @@ def run(K=40, T=10000, alpha_lev=0.0):
         prev = mh
     print(f"           -> {'PASS (kurtosis declines toward 0)' if monotone else 'CHECK (not monotone)'}")
 
-    # Fact 6/8 -- volatility clustering, slow-decaying |r| ACF
+    # Fact 6/8: volatility clustering, slow-decaying |r| ACF
     print(f"[Fact 6/8] ACF(|returns|) by lag (positive, slow decay):")
     lags = (1, 5, 10, 25)
     means = []
@@ -118,7 +118,7 @@ def run(K=40, T=10000, alpha_lev=0.0):
     ok = means[0] > 0.05 and means[-1] > 0 and means[-1] < means[0]
     print(f"           -> {'PASS (positive, slowly decaying)' if ok else 'CHECK'}")
 
-    # Fact 9 -- leverage effect; FW expected ~0
+    # Fact 9: leverage effect; FW expected ~0
     lev = np.array([leverage_curve(r) for r in R])
     lev_m = lev.mean(axis=0)
     print(f"[Fact 9] leverage L(tau)=corr(r_t, r_(t+tau)^2), tau=1,2,3,5,10:")

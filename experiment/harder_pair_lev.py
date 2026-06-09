@@ -148,7 +148,6 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(4, 5, 6, 7, 8, 3), tau=1):
     r2_table(rows_g, "FW-vs-GJR (leverage)")
     r2_table(rows_n, "NULL (FW vs FW)")
 
-    # decomposition at m=4 for the record
     log("\nper-feature separation at m=4 (Cohen's d, sorted):")
     for d, nm, grp in decompose(fw, gc, m=4, tau=tau):
         log(f"   {grp}  {nm:16} d = {d:.2f}")

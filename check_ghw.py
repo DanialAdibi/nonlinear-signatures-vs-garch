@@ -22,7 +22,7 @@ from models.bh_ghw import BHGHWParams, simulate_bh_ghw
 from signatures.moments import stylized_facts
 from seeds import get_rng, MASTER_SEED
 
-RET_AC_TOL = 0.1   # near-white tolerance, matching check_bh98.py's no_ac test
+RET_AC_TOL = 0.1
 
 
 def fmt(a):

@@ -61,11 +61,11 @@ class BHParams:
     R: float = 1.01          # gross risk-free rate (1 + r)
     a: float = 1.0           # risk aversion
     sigma2: float = 1.0      # conditional variance of excess returns
-    # Type 1 -- fundamentalist
+    # Type 1: fundamentalist
     g1: float = 0.0
     b1: float = 0.0
     C1: float = 1.0          # information cost
-    # Type 2 -- trend follower
+    # Type 2: trend follower
     g2: float = 1.2
     b2: float = 0.0
     C2: float = 0.0
@@ -104,7 +104,7 @@ def simulate_bh98(params: BHParams, n: int, burn_in: int = 1000, rng=None):
     EXPLODE = 1e8
 
     for t in range(2, T):
-        # fractions from fitness known before x_t is realised (stable softmax)
+
         bu1, bu2 = beta * U1, beta * U2
         m = bu1 if bu1 > bu2 else bu2
         e1 = np.exp(bu1 - m)
@@ -113,11 +113,10 @@ def simulate_bh98(params: BHParams, n: int, burn_in: int = 1000, rng=None):
         n1 = e1 / Z
         n2 = e2 / Z
 
-        # forecasts of x_{t+1} formed at t (use x_{t-1})
         f1 = g1 * x[t - 1] + b1
         f2 = g2 * x[t - 1] + b2
         eps = rng.normal(0.0, params.sigma_eps)
-        # pricing equation: R*x_t = n1*f1 + n2*f2 + eps  (noise enters via 1/R)
+
         x[t] = (n1 * f1 + n2 * f2 + eps) / R
 
         if not np.isfinite(x[t]) or abs(x[t]) > EXPLODE:
@@ -125,7 +124,6 @@ def simulate_bh98(params: BHParams, n: int, burn_in: int = 1000, rng=None):
             x[t:] = np.nan
             break
 
-        # realised profits: positions at t-1 used forecasts g_h*x_{t-2}+b_h
         excess = x[t] - R * x[t - 1]
         z1 = (g1 * x[t - 2] + b1 - R * x[t - 1]) * inv_var
         z2 = (g2 * x[t - 2] + b2 - R * x[t - 1]) * inv_var

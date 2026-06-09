@@ -45,7 +45,7 @@ def sample_entropy(x, m=2, r=0.2, max_n=1500):
         count = 0
         for i in range(n_templates):
             d = np.max(np.abs(templates - templates[i]), axis=1)
-            count += np.sum(d <= tol) - 1          # exclude self-match
+            count += np.sum(d <= tol) - 1
         return count
 
     B = phi(m)

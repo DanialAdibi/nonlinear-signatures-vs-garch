@@ -32,7 +32,7 @@ def henon(n, a=1.4, b=0.3, burn_in=1000, noise=0.0, rng=None):
     T = n + burn_in
     x = np.empty(T)
     y = np.empty(T)
-    # random IC inside the basin of attraction (safely bounded for a=1.4,b=0.3)
+
     x[0], y[0] = rng.uniform(-0.2, 0.2), rng.uniform(-0.05, 0.05)
     for t in range(1, T):
         x[t] = 1.0 - a * x[t - 1] ** 2 + y[t - 1]

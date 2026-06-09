@@ -54,7 +54,7 @@ def recurrence_quant(x, m, tau, rr=0.05, theiler=None, l_min=3, max_n=2000):
 
     band = np.abs(np.subtract.outer(np.arange(N), np.arange(N))) <= theiler
     offband = ~band
-    eps = np.quantile(D[offband], rr)          # threshold for target recurrence rate
+    eps = np.quantile(D[offband], rr)
     R = (D <= eps) & offband
     rr_actual = R.sum() / offband.sum()
     total_points = R.sum()

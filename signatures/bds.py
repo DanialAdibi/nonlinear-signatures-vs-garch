@@ -45,7 +45,6 @@ def bds_statistic(x, m=2, eps_mult=1.0, max_n=2000):
     np.fill_diagonal(prod, 0.0)
     Cm = prod.sum() / (Nm * (Nm - 1))
 
-    # asymptotic variance (Brock et al. 1996)
     var = K ** m + (m - 1) ** 2 * C1 ** (2 * m) - m ** 2 * K * C1 ** (2 * m - 2)
     for j in range(1, m):
         var += 2 * (K ** (m - j)) * (C1 ** (2 * j))
