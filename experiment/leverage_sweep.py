@@ -76,9 +76,8 @@ def run(K=300, T=2500, alpha_grid=ALPHA_GRID, m_report=M_REPORT, tau=1):
         for m in m_report:
             a1, a2, _clust, r2d = evaluate(fw, "lfw", gc, "lgc", m, tau, cache)
             dauc[m] = a2 - a1
-            lam[m] = r2d.get("lam", float("nan"))   # laminarity separation
-            d2[m] = r2d.get("d2", float("nan"))      # correlation-dimension separation (co-driver, Sec 6.4)
-        # null guard at the top m only
+            lam[m] = r2d.get("lam", float("nan")) 
+            d2[m] = r2d.get("d2", float("nan"))   
         a1n, a2n, _, _ = evaluate(fw, "lfw", fwb, "lfwb", m_report[-1], tau, cache)
         row = (f"{lev:>9.0f}{gmean:>+11.4f}{gpos:>6.2f}"
                + "".join(f"{dauc[m]:>+11.3f}" for m in m_report)
@@ -97,10 +96,7 @@ def run(K=300, T=2500, alpha_grid=ALPHA_GRID, m_report=M_REPORT, tau=1):
 
 if __name__ == "__main__":
     import sys
-    # Resolve K from: CLI arg, then env var LEV_SWEEP_K, then default 300.
-    # The env var is the robust path (some shells drop positional args to
-    # `python -m`). We PRINT the resolved K loudly so a silent fallback to the
-    # default can never pass unnoticed before a ~100-minute run.
+
     if len(sys.argv) > 1:
         K = int(sys.argv[1])
     elif os.environ.get("LEV_SWEEP_K"):

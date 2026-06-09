@@ -79,17 +79,17 @@ def arrays_identical(a_list, b_list):
 
 
 def main():
-    K, T, tag = 12, 600, "hp_fw"   # small + fast; property is K-independent
+    K, T, tag = 12, 600, "hp_fw"
     print("Cache-integrity guard (controls/test_cache_integrity.py)")
     print("=" * 60)
 
-    # (1) DETERMINISM -----------------------------------------------------
+    # (1) DETERMINISM
     a = fw_paths_tagged(K, T, tag)
     b = fw_paths_tagged(K, T, tag)
     ok, detail = arrays_identical(a, b)
     check("determinism: same seed -> identical paths", ok, detail)
 
-    # (2) ROUND-TRIP FIDELITY --------------------------------------------
+    # (2) ROUND-TRIP FIDELITY
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, f"fw_K{K}_T{T}.npy")
         np.save(path, np.array(a))
@@ -97,24 +97,21 @@ def main():
         ok, detail = arrays_identical(a, reloaded)
         check("round-trip: save -> load == fresh", ok, detail)
 
-    # (3) KEY SENSITIVITY -------------------------------------------------
+    # (3) KEY SENSITIVITY
     c = fw_paths_tagged(K, T + 50, tag)
-    # different T must change the paths (length differs at least)
     diff = (len(c) != len(a)) or any(
         np.asarray(x).shape != np.asarray(y).shape for x, y in zip(a, c)
     ) or not arrays_identical(a, c)[0]
     check("key sensitivity: changing T changes paths", diff,
           "paths differ when T differs")
 
-    # (4) LEVERAGE GENERATION DETERMINISM --------------------------------
+    # (4) LEVERAGE GENERATION DETERMINISM
     la = fw_lev_paths(K, T, 50.0, "hpl_fw")
     lb = fw_lev_paths(K, T, 50.0, "hpl_fw")
     ok, detail = arrays_identical(la, lb)
     check("leverage determinism: same seed -> identical", ok, detail)
 
-    # (5) LEVERAGE vs SYMMETRIC DIFFER -----------------------------------
-    # with alpha_lev=50 the paths must NOT equal the symmetric ones
-    # (guards against alpha_lev being silently ignored)
+    # (5) LEVERAGE vs SYMMETRIC DIFFER
     same, _ = arrays_identical(a, la)
     check("leverage changes output (alpha_lev not ignored)", not same,
           "leverage paths differ from symmetric")

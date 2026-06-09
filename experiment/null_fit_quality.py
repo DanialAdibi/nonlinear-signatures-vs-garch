@@ -106,12 +106,10 @@ def run(K=300, T=2500, alpha_lev=50.0):
     log(f"K={K}  T={T}  alpha_lev={alpha_lev}  seed={MASTER_SEED}")
     log("=" * 78)
 
-    # FW leverage paths (reuse the cached set the experiment used)
     fw, _fwb, _gc, gammas = build_or_load(K, T, alpha_lev)
     log(f"loaded {len(fw)} FW leverage paths (cached); "
         f"reference GJR gamma mean={np.mean(gammas):+.4f}")
 
-    # NATIVE nulls: each model's own simulation, NOT rank-matched (see header).
     log("\nsimulating native GJR null (rank_match=False) ...")
     gjr = [s for s in garch_match(fw, MASTER_SEED, rank_match=False) if s is not None]
     log(f"  got {len(gjr)} GJR null paths")
@@ -121,7 +119,7 @@ def run(K=300, T=2500, alpha_lev=50.0):
         f"EGARCH gamma mean={np.mean(eg_g):+.4f} "
         f"({100 * np.mean(eg_g < 0):.0f}% negative)")
 
-    # ---- volatility clustering: ACF(|r|) ----
+    # volatility clustering: ACF(|r|)
     fw_acf, gjr_acf, eg_acf = (cloud_mean(p, acf_abs_profile) for p in (fw, gjr, eg))
     log("\n" + "-" * 78)
     log("VOLATILITY CLUSTERING  ACF(|r|)   lags = " + str(LAGS))
@@ -133,7 +131,7 @@ def run(K=300, T=2500, alpha_lev=50.0):
     acf_d_gjr = np.nanmean(np.abs(gjr_acf - fw_acf))
     acf_d_eg = np.nanmean(np.abs(eg_acf - fw_acf))
 
-    # ---- leverage: L(tau) ----
+    # leverage: L(tau)
     fw_lev, gjr_lev, eg_lev = (cloud_mean(p, leverage_profile) for p in (fw, gjr, eg))
     log("\n" + "-" * 78)
     log("LEVERAGE  L(tau) = corr(r_t, r_(t+tau)^2)   tau = " + str(TAUS))
@@ -145,7 +143,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
     lev_d_gjr = np.nanmean(np.abs(gjr_lev - fw_lev))
     lev_d_eg = np.nanmean(np.abs(eg_lev - fw_lev))
 
-    # ---- verdict ----
     log("\n" + "=" * 78)
     log("FIT-QUALITY DISTANCE TO FW  (mean |null - FW|, smaller = better fit)")
     log(f"  clustering ACF(|r|):   GJR {acf_d_gjr:.3f}   EGARCH {acf_d_eg:.3f}")

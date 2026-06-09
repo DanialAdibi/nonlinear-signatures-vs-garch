@@ -47,7 +47,7 @@ def log(s=""):
     print(s, flush=True)
     OUT.append(s)
     os.makedirs("results", exist_ok=True)
-    with open(RESULT_FILE, "w") as f:          # rewrite after every line (Ctrl-C safe)
+    with open(RESULT_FILE, "w") as f:
         f.write("\n".join(OUT))
 
 

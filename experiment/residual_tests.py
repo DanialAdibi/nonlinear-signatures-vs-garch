@@ -87,8 +87,7 @@ def fw_paths(K, T, alpha_lev, tag):
 
 
 def run(K=300, T=2500, alpha_lev=0.0, m_grid=(4, 6, 8), tau=1):
-    # Per-arm output file so symmetric and leverage runs do not clobber each
-    # other (run_all.sh invokes this module once per arm).
+
     global RESULT_FILE, OUT
     OUT = []
     RESULT_FILE = ("results/residual_tests.txt" if alpha_lev == 0
@@ -106,7 +105,7 @@ def run(K=300, T=2500, alpha_lev=0.0, m_grid=(4, 6, 8), tau=1):
     fw, gc = fw[:n], gc[:n]
     log(f"got {len(gc)} GARCH paths")
 
-    # -------- PART A: discrimination on residuals --------
+    # (A) discrimination on residuals
     log("\n" + "-" * 70)
     log("PART A (#3) -- discrimination on GJR standardized residuals")
     log("-" * 70)
@@ -124,7 +123,7 @@ def run(K=300, T=2500, alpha_lev=0.0, m_grid=(4, 6, 8), tau=1):
         a1, a2, _, _ = evaluate(fw_res, "rfw", gc_res, "rgc", m, tau, cache)
         log(f"{m:>4}{a1:>9.3f}{a2:>9.3f}{a2 - a1:>+14.3f}")
 
-    # -------- PART B: BDS adequacy --------
+    # (B) BDS adequacy
     log("\n" + "-" * 70)
     log("PART B (#2) -- BDS adequacy: raw FW returns vs FW GJR residuals")
     log("-" * 70)
@@ -139,10 +138,8 @@ def run(K=300, T=2500, alpha_lev=0.0, m_grid=(4, 6, 8), tau=1):
     drop = 100 * (1 - abs(res_bds.mean()) / (abs(raw_bds.mean()) + 1e-12))
     log(f"    -> filtering removes ~{drop:.0f}% of the raw BDS magnitude")
 
-    # Bootstrap (permutation) null -- the heavy-tail-robust calibration.
-    # Report the rejection RATE across paths at the 5% level, for raw vs residual.
     log(f"\n  Bootstrap (permutation) BDS test [primary -- heavy-tail robust]:")
-    n_bds = min(len(fw), len(fw_res), 60)   # bootstrap is O(n_boot * N^2); cap paths for cost
+    n_bds = min(len(fw), len(fw_res), 60)
     raw_p, res_p = [], []
     for i in range(n_bds):
         rb = bds_bootstrap(fw[i], m=2, n_boot=199,

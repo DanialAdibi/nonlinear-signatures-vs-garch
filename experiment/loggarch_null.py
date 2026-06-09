@@ -49,11 +49,10 @@ from seeds import get_rng, MASTER_SEED
 RESULT_FILE = "results/loggarch_null.txt"
 OUT = []
 
-FLOOR_PCT = 1.0         # percentile to floor log(eps^2) at (inlier guard); vary to check sensitivity
-SIM_BURN = 250          # simulation burn-in to wash out the initial log-variance
-GJR_REF_M8 = +0.016     # canonical additive anchor (ties)
-EGARCH_REF_M8 = +0.146  # canonical log anchor (separates)
-# EGARCH per-feature Cohen's d at m=8 (from Step 2, K=300), as the log-side reference column:
+FLOOR_PCT = 1.0      
+SIM_BURN = 250          
+GJR_REF_M8 = +0.016     
+EGARCH_REF_M8 = +0.146  
 EG_REF_D = {"lam": 0.88, "d2": 0.82, "det": 0.60, "d2_r2": 0.26,
             "bds": 0.30, "lyap_r2": 0.13, "lambda1": 0.14}
 
@@ -88,11 +87,11 @@ def loggarch_fit(r):
         eps = r - mu
         le2 = np.maximum(np.log(eps * eps + 1e-300), floor)
         s = np.sign(eps)
-        c0 = omega + alpha * le2 + xi * s          # vectorised driver
+        c0 = omega + alpha * le2 + xi * s         
         logh = np.empty(n)
         logh[0] = v0
         b = np.clip(beta, -0.9999, 0.9999)
-        for t in range(1, n):                       # sequential log-variance recursion
+        for t in range(1, n):                       
             logh[t] = c0[t - 1] + b * logh[t - 1]
         logh = np.clip(logh, -50.0, 50.0)
         ll = _std_t_loglik(eps, logh, nu)
@@ -102,7 +101,7 @@ def loggarch_fit(r):
     x0 = [float(np.mean(r)), v0 * 0.05, 0.04, -0.02, 0.90, np.log(6.0)]
     bnds = [(None, None), (None, None), (-0.6, 0.6), (-1.0, 1.0), (-0.999, 0.999), (-2.0, 5.0)]
     res = minimize(negll, x0, method="L-BFGS-B", bounds=bnds)
-    if not res.success:                              # polish a stubborn fit
+    if not res.success:                           
         res2 = minimize(negll, res.x, method="Nelder-Mead",
                         options={"maxiter": 4000, "xatol": 1e-6, "fatol": 1e-6})
         if res2.fun < res.fun:
@@ -117,7 +116,7 @@ def loggarch_simulate(p, n, rng):
     mu, omega, alpha, xi, beta = p["mu"], p["omega"], p["alpha"], p["xi"], p["beta"]
     nu, floor, v0 = p["nu"], p["floor"], p["v0"]
     b = np.clip(beta, -0.9999, 0.9999)
-    scale_t = np.sqrt((nu - 2) / nu)               # standardise t to unit variance
+    scale_t = np.sqrt((nu - 2) / nu)         
     total = n + SIM_BURN
     logh = v0
     out = np.empty(total)
@@ -199,7 +198,7 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1, floor_pct=None):
         log(f"  {f:10}{r2d_peak.get(f, float('nan')):>10.2f}"
             f"{gjr_r2d_peak.get(f, float('nan')):>9.2f}{EG_REF_D.get(f, float('nan')):>9.2f}")
 
-    # ---- verdict ----
+
     lgk = lg_dauc[peak]
     log("\n" + "=" * 80)
     log(f"ANCHORS at m={peak}:  GJR/APARCH (additive) ~{GJR_REF_M8:+.3f} tie"
@@ -231,8 +230,7 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1, floor_pct=None):
 
 
 if __name__ == "__main__":
-    # usage: python -m experiment.loggarch_null [K] [FLOOR_PCT]
-    #   floor-sensitivity sweep: run at 0.5, 1.0, 2.5 -> separate floor-tagged output files
+
     K = int(sys.argv[1]) if len(sys.argv) > 1 else 300
     floor = float(sys.argv[2]) if len(sys.argv) > 2 else None
     run(K=K, floor_pct=floor)

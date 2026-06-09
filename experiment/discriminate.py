@@ -71,9 +71,7 @@ def auc(X, y, cols, names, n_splits=5, n_repeats=6):
 
 
 def run(T=2500, K=120, m=4, tau=1, nu_grid=(0.02, 0.05, 0.1, 0.3, 0.6)):
-    # K=120 gives a clean null (AUC~0.5) and stable AUCs but is compute-bound on
-    # a single core (~12 min full sweep). K=60 runs in ~4 min and shows the same
-    # SHAPE (the Cohen's d gaps are stable), but its null AUC is noisy (~0.5-0.64).
+
     print("Phase-4 discrimination experiment: DCA vs TPA")
     print(f"T={T}, K={K}/model, embedding (m={m}, tau={tau}), seed={MASTER_SEED}\n")
 
@@ -96,7 +94,6 @@ def run(T=2500, K=120, m=4, tau=1, nu_grid=(0.02, 0.05, 0.1, 0.3, 0.6)):
         ac = auc(Xf, y, ALL_FEATURES, nm)
         print(f"{nu:>6}{r1d:>9.2f}{r2d:>9.2f}{a1:>9.3f}{a2:>9.3f}{ac:>9.3f}")
 
-    # --- A-vs-A null control (must differ only by seed, not by any setting) -
     dca_b = generate_paths(FWParams(switching="dca"), "dca_b", K, T)
     Xb, _ = feature_matrix(dca_b, m=m, tau=tau)
     Xn = np.vstack([Xd, Xb])

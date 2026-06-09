@@ -83,7 +83,7 @@ def garch_match(fw_series, seed0, rank_match=False):
     from arch.univariate import StudentsT
     out = []
     for i, r in enumerate(fw_series):
-        scale = 10.0 / (np.std(r) + 1e-12)     # put in a well-conditioned range
+        scale = 10.0 / (np.std(r) + 1e-12)
         y = r * scale
         try:
             am = arch_model(y, vol="GARCH", p=1, o=1, q=1, dist="t",
@@ -97,14 +97,10 @@ def garch_match(fw_series, seed0, rank_match=False):
             sd = am.simulate(res.params, nobs=len(y))
             s = sd["data"].values / scale
             if rank_match and len(s) == len(r):
-                # monotonic rank-order remap onto FW's exact empirical marginal:
-                # replace each simulated value with the FW value at the same rank,
-                # so the unconditional distribution matches FW exactly while the
-                # GARCH temporal ordering is preserved.
                 s = np.sort(r)[np.argsort(np.argsort(s))]
             out.append(s)
         except Exception:
-            out.append(None)   # keep aligned with fw_series so pairing/rank-match stay valid
+            out.append(None)
     return out
 
 
@@ -198,7 +194,7 @@ def bootstrap_delta(fw, gc, m=4, tau=1, n_boot=2000, ci=95.0, label="TIGHT"):
     fw, gc = fw[:n], gc[:n]
     XF, names = feats(fw, m, tau)
     XG, _ = feats(gc, m, tau)
-    fcol = np.all(np.isfinite(np.vstack([XF, XG])), axis=0)   # same mask as _evaluate
+    fcol = np.all(np.isfinite(np.vstack([XF, XG])), axis=0)
     names_k = [nm for nm, k in zip(names, fcol) if k]
     XF, XG = XF[:, fcol], XG[:, fcol]
     y = np.array([0] * n + [1] * n)
@@ -208,7 +204,6 @@ def bootstrap_delta(fw, gc, m=4, tau=1, n_boot=2000, ci=95.0, label="TIGHT"):
         Xc = np.vstack([XF[:, idx], XG[:, idx]])
         pipe = make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000))
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
-        # rows 0..n-1 are FW, rows n..2n-1 are GARCH; predictions stay in row order
         return cross_val_predict(pipe, Xc, y, cv=cv, method="predict_proba")[:, 1]
 
     s1, s2 = oof(REFEREE_1), oof(REFEREE_2)
@@ -225,7 +220,7 @@ def bootstrap_delta(fw, gc, m=4, tau=1, n_boot=2000, ci=95.0, label="TIGHT"):
     rng = get_rng(MASTER_SEED, "hp_boot", label)
     deltas = np.empty(n_boot)
     for b in range(n_boot):
-        idx = rng.integers(0, n, size=n)          # resample PAIRS with replacement
+        idx = rng.integers(0, n, size=n)
         deltas[b] = auc_pair(idx, sF2, sG2) - auc_pair(idx, sF1, sG1)
 
     lo = (100.0 - ci) / 2.0
@@ -247,8 +242,6 @@ def bootstrap_delta(fw, gc, m=4, tau=1, n_boot=2000, ci=95.0, label="TIGHT"):
 
 
 def run(K=300, T=2500, m=4, tau=1, bootstrap=False, n_boot=2000, ci=95.0):
-    # K=300 to tighten the +0.046 edge; long run (~30-50 min). bootstrap adds a
-    # paired CI on the TIGHT Delta (extra feature pass; on when HP_BOOTSTRAP=1).
     log("=" * 64)
     log("HARDER PAIR: FW (behavioural) vs GJR-GARCH null -- LOOSE vs TIGHT match")
     log(f"K={K}, T={T}, embedding (m={m}, tau={tau}), seed={MASTER_SEED}")
@@ -258,8 +251,6 @@ def run(K=300, T=2500, m=4, tau=1, bootstrap=False, n_boot=2000, ci=95.0):
     log(f"\ngenerated {len(fw)} FW paths; fitting GARCH (loose) + rank-matched (tight)...")
     gc_loose = garch_match(fw, MASTER_SEED, rank_match=False)
     gc_tight = garch_match(fw, MASTER_SEED, rank_match=True)
-    # keep only paths where BOTH fits succeeded, aligned with their source FW path,
-    # so each tight path stays a reordering of its OWN FW path's values.
     ok = [i for i in range(len(fw)) if gc_loose[i] is not None and gc_tight[i] is not None]
     fw = [fw[i] for i in ok]
     gc_loose = [gc_loose[i] for i in ok]

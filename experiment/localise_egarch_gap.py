@@ -83,12 +83,12 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1):
 
     full = list(feature_vector(fw[0]).keys())
     cache = {}
-    sf_by_m = {}   # single-feature AUC per feature, per m
+    sf_by_m = {}
     dauc_by_m = {}
 
     for m in m_grid:
-        XA = feat_cached(fw, "efw", m, tau, cache)   # FW
-        XB = feat_cached(gc, "egc", m, tau, cache)   # EGARCH null
+        XA = feat_cached(fw, "efw", m, tau, cache)   
+        XB = feat_cached(gc, "egc", m, tau, cache)  
         X = np.vstack([XA, XB])
         y = np.array([0] * len(fw) + [1] * len(gc))
         fc = np.all(np.isfinite(X), axis=0)
@@ -108,9 +108,7 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1):
 
         present_r2 = [f for f in REFEREE_2 if f in names]
         single = {f: (auc(col(f), y) if f in names else float("nan")) for f in REFEREE_2}
-        # Cohen's d via max_d, matching evaluate()'s r2d (uses full names + raw XA/XB)
         cohen = {f: max_d(XA, XB, full, [f]) for f in REFEREE_2}
-        # leave-one-out: unique contribution to AUC_R2
         loo = {}
         for f in present_r2:
             rest = [g for g in present_r2 if g != f]
@@ -127,13 +125,12 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1):
             sval = f"{single[f]:.3f}" if np.isfinite(single[f]) else "  n/a"
             lval = f"{loo[f]:+.3f}" if f in loo else "   . "
             log(f"  {f:10}{sval:>12}{cohen[f]:>10.2f}{lval:>11}")
-        # moments sanity: best single moment (should stay near 0.5 if EGARCH matches them)
         best_mom = max(((auc(col(c), y), c) for c in REFEREE_1 if c in names),
                        default=(float("nan"), "n/a"))
         log(f"  best single moment (REFEREE_1): {best_mom[1]} AUC={best_mom[0]:.3f}"
             f"   (near 0.5 confirms moments do not carry the gap)")
 
-    # ---- cross-m carrier identification ----
+    # cross-m carrier identification
     peak = max(m_grid)
     low = min(m_grid)
     present = [f for f in REFEREE_2 if np.isfinite(sf_by_m[peak][f])]

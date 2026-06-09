@@ -82,11 +82,9 @@ def iaaft_surrogate(x, rng, iters=100):
     sorted_x = np.sort(x)
     s = rng.permutation(x)
     for _ in range(iters):
-        # match power spectrum
         S = np.fft.rfft(s)
         S = amp * np.exp(1j * np.angle(S))
         s = np.fft.irfft(S, n=len(x))
-        # match amplitude distribution (rank-order remap)
         ranks = np.argsort(np.argsort(s))
         s = sorted_x[ranks]
     return s
@@ -134,7 +132,7 @@ def run(K=80, T_sweep=(2500, 5000, 10000), T_pc=4000, K_pc=60):
     log(f"K={K}, master_seed={MASTER_SEED}")
     log("=" * 64)
 
-    # ---- A) T-sweep -----------------------------------------------------
+    # (A) T-sweep
     log("\n[A] T-SWEEP  (DCA vs TPA nu=0.05; faithful pair is separable -- R2 must not overtake R1)")
     log(f"{'T':>7}{'AUC_R1':>9}{'AUC_R2':>9}{'AUC_all':>9}")
     R2_EXT = REFEREE_2 + ["perm_entropy", "sample_entropy"]
@@ -146,7 +144,7 @@ def run(K=80, T_sweep=(2500, 5000, 10000), T_pc=4000, K_pc=60):
                             "ALL": REFEREE_1 + REFEREE_2}, feat_basic)
         log(f"{T:>7}{res['R1']:>9.3f}{res['R2']:>9.3f}{res['ALL']:>9.3f}")
 
-    # ---- B) positive control via surrogates -----------------------------
+    # (B) positive control via surrogates
     log("\n[B] POSITIVE CONTROL  (chaotic system vs its IAAFT surrogate)")
     log("    The chaotic systems use random initial conditions per seed, so the")
     log("    'real' class has genuine within-class variance (not one cloned path).")
@@ -172,7 +170,7 @@ def run(K=80, T_sweep=(2500, 5000, 10000), T_pc=4000, K_pc=60):
             res = discriminate(real, surr, {"R1": REFEREE_1, "R2": REFEREE_2}, feat_basic)
             log(f"{name:>8}{nz:>7.1f}{res['R1']:>9.3f}{res['R2']:>9.3f}")
 
-    # ---- C) richer features ---------------------------------------------
+    # (C) richer features
     log("\n[C] RICHER FEATURES  (DCA vs TPA nu=0.05, T=5000; basic R2 vs R2+entropy)")
     dca = fw_paths("dca", "C_dca", K, 5000)
     tpa = fw_paths("tpa", "C_tpa", K, 5000, nu=0.05)

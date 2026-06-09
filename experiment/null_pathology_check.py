@@ -76,9 +76,9 @@ def fit_null(fw, vol, seed_tag):
             b = float(p.get("beta[1]", np.nan))
             g = float(p.get("gamma[1]", np.nan))
             if vol == "EGARCH":
-                persistence.append(abs(b))       # log-variance AR root
+                persistence.append(abs(b))
             else:
-                persistence.append(a + b + 0.5 * g)  # GJR variance persistence
+                persistence.append(a + b + 0.5 * g)
             beta.append(b)
             seed = int(get_rng(MASTER_SEED, seed_tag, i).integers(0, 2 ** 31))
             try:
@@ -131,7 +131,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
     eg, eg_pers, eg_beta = fit_null(fw, "EGARCH", "egarch_seed")
     log(f"  got {len(eg)} EGARCH paths")
 
-    # ---- fitted persistence vs the stability edge ----
     log("\n" + "-" * 78)
     log("FITTED PERSISTENCE  (stationarity needs < 1; near 1 = near-explosive)")
     log("-" * 78)
@@ -140,7 +139,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
     log(f"  EGARCH |beta[1]| (logvar): mean={np.mean(eg_pers):.3f}  med={np.median(eg_pers):.3f}  "
         f"max={np.max(eg_pers):.3f}  frac>0.98={np.mean(eg_pers > 0.98):.2f}")
 
-    # ---- simulated-path health vs FW ----
     fw_k, fw_m, fw_nf = path_health(fw)
     gjr_k, gjr_m, gjr_nf = path_health(gjr)
     eg_k, eg_m, eg_nf = path_health(eg)
@@ -151,7 +149,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
     summarise("GJR null", gjr_k, gjr_m, gjr_nf, len(gjr))
     summarise("EGARCH null", eg_k, eg_m, eg_nf, len(eg))
 
-    # spike count: paths whose largest standardised move exceeds FW's worst
     fw_worst = np.max(fw_m)
     gjr_spikes = int(np.sum(gjr_m > fw_worst))
     eg_spikes = int(np.sum(eg_m > fw_worst))
@@ -159,8 +156,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
     log(f"  GJR null paths exceeding it   : {gjr_spikes} of {len(gjr_m)}")
     log(f"  EGARCH null paths exceeding it: {eg_spikes} of {len(eg_m)}")
 
-    # freak-path count (the EGARCH-specific failure mode): non-finite, or a single
-    # path with absurd kurtosis from a near-explosive log-variance excursion.
     EXTREME_K = 15.0
     gjr_freak = gjr_nf + int(np.sum(gjr_k > EXTREME_K))
     eg_freak = eg_nf + int(np.sum(eg_k > EXTREME_K))
@@ -171,9 +166,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
     log("  small-sample fitting effect); it is only meaningful if EGARCH is railed"
         " MORE than GJR.")
 
-    # ---- verdict: comparative. GJR is the control whose edge DOES collapse, so a
-    # pathology shared with GJR cannot explain why only EGARCH separates. Flag EGARCH
-    # only where it is worse than GJR. ----
     log("\n" + "=" * 78)
     eg_more_freak = eg_freak > gjr_freak and (eg_freak / max(len(eg), 1)) > 0.02
     eg_more_explosive = np.mean(eg_pers > 0.98) > np.mean(gjr_pers > 0.98) + 0.10

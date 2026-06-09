@@ -49,8 +49,6 @@ def evaluate_at_m(fw, gc, m, tau=1):
     a2 = auc(sub(REFEREE_2), y)
     full = list(feature_vector(fw[0]).keys())
     clust_d = max_d(XF, XG, full, ["acf_abs_1", "acf_abs_5", "acf_abs_10"])
-    # per-feature R2 separation (attribution is read off the data, not assumed: the
-    # leading nonlinear feature is not necessarily laminarity -- see embedding_diagnostics).
     r2d = {f: max_d(XF, XG, full, [f]) for f in REFEREE_2}
     return a1, a2, clust_d, r2d
 

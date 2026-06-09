@@ -124,8 +124,6 @@ def run(K=300, T=2500):
     log("\nFitting plain GARCH (o=0) for the side-by-side comparison...")
     gc_plain, ok_plain, _, _ = fit_and_simulate(fw, MASTER_SEED, o=0, rank_match=True)
 
-    # align both nulls to the FW paths whose fit succeeded under BOTH specs, so the
-    # two comparisons use the same FW subset and their Deltas are directly comparable.
     common = sorted(set(ok_gjr) & set(ok_plain))
     fw_c = [fw[i] for i in common]
     gjr_c = [gc_gjr[ok_gjr.index(i)] for i in common]

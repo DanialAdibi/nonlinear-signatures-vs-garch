@@ -44,9 +44,8 @@ from seeds import get_rng, MASTER_SEED
 RESULT_FILE = "results/aparch_null.txt"
 OUT = []
 
-GJR_REF_M8 = +0.016    # canonical leverage-arm GJR dAUC at m=8 (additive anchor)
-EGARCH_REF_M8 = +0.146  # canonical EGARCH dAUC at m=8 (log anchor)
-# EGARCH per-feature Cohen's d at m=8 (from Step 2, localise_egarch_gap.py, K=300):
+GJR_REF_M8 = +0.016
+EGARCH_REF_M8 = +0.146
 EG_REF_D = {"lam": 0.88, "d2": 0.82, "det": 0.60, "d2_r2": 0.26,
             "bds": 0.30, "lyap_r2": 0.13, "lambda1": 0.14}
 
@@ -125,7 +124,6 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1):
         if m == peak:
             r2d_peak, gjr_r2d_peak = r2da, r2dg
 
-    # per-feature separation at the peak: does APARCH track GJR (flat) or EGARCH (raised)?
     log(f"\nPer-feature Cohen's d at m={peak} -- APARCH vs the GJR (additive, in-run) and")
     log("EGARCH (log, cited from Step 2) anchors.  APARCH near GJR = additive ties;")
     log("APARCH near EGARCH = additive separates:")
@@ -134,7 +132,6 @@ def run(K=300, T=2500, alpha_lev=50.0, m_grid=(3, 5, 8), tau=1):
         log(f"  {f:10}{r2d_peak.get(f, float('nan')):>9.2f}"
             f"{gjr_r2d_peak.get(f, float('nan')):>9.2f}{EG_REF_D.get(f, float('nan')):>9.2f}")
 
-    # ---- verdict ----
     apk = ap_dauc[peak]
     log("\n" + "=" * 80)
     log(f"ANCHORS at m={peak}:  GJR (additive) {GJR_REF_M8:+.3f} ties"

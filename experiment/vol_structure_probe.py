@@ -119,7 +119,7 @@ def cohend(a, b):
     if len(a) < 2 or len(b) < 2:
         return float("nan")
     p = np.sqrt((a.var() + b.var()) / 2.0) + 1e-12
-    return float((a.mean() - b.mean()) / p)   # signed: null minus FW
+    return float((a.mean() - b.mean()) / p)
 
 
 def run(K=300, T=2500, alpha_lev=50.0):
@@ -157,7 +157,6 @@ def run(K=300, T=2500, alpha_lev=50.0):
         log(f"  {s:14}{np.median(SFW[s]):>10.3f}{np.median(SGJR[s]):>10.3f}"
             f"{np.median(SEG[s]):>10.3f}{d_cal:>+11.2f}{d_gjr:>+11.2f}{d_eg:>+11.2f}{select:>+9.2f}")
 
-    # ---- verdict ----
     max_cal = max(abs(r[1]) for r in rows)
     rows_sorted = sorted(rows, key=lambda r: r[4], reverse=True)
     top = rows_sorted[0]

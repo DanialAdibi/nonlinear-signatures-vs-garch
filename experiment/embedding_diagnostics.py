@@ -87,9 +87,6 @@ def evaluate(A, tagA, B, tagB, m, tau, cache):
     a1 = auc(sub(REFEREE_1), y)
     a2 = auc(sub(REFEREE_2), y)
     clust = max_d(XA, XB, full, ["acf_abs_1", "acf_abs_5", "acf_abs_10"])
-    # per-feature R2 separation, so the mechanism is read off the data rather than
-    # assumed: the regenerated K=300 decomposition shows BDS, not laminarity, as the
-    # leading nonlinear feature at m=4, so we report every R2 feature's d at each m.
     r2d = {f: max_d(XA, XB, full, [f]) for f in REFEREE_2}
     return a1, a2, clust, r2d
 
@@ -102,8 +99,6 @@ def msweep(A, tagA, B, tagB, label, tau, cache, m_grid=(3, 4, 5, 6)):
         a1, a2, clust, r2d = evaluate(A, tagA, B, tagB, m, tau, cache)
         log(f"{m:>4}{a1:>9.3f}{a2:>9.3f}{a2 - a1:>+8.3f}{clust:>9.2f}")
         rows[m] = r2d
-    # per-feature R2 attribution: which nonlinear feature carries any gap, and how
-    # it moves with m (sorted by peak separation across the grid for readability).
     log("   R2 per-feature Cohen's d by m:")
     log("   " + f"{'feature':>14}" + "".join(f"{'m='+str(m):>8}" for m in m_grid))
     for f in sorted(REFEREE_2, key=lambda f: max(rows[m][f] for m in m_grid), reverse=True):
@@ -116,8 +111,8 @@ def run(K=300, T=2500):
     log(f"K={K}, T={T}, seed={MASTER_SEED}")
     log("=" * 64)
 
-    fw = fw_paths_tagged(K, T, "hp_fw")        # primary FW batch (as in harder_pair)
-    fw_b = fw_paths_tagged(K, T, "hp_fw_b")    # independent FW batch for the null
+    fw = fw_paths_tagged(K, T, "hp_fw")
+    fw_b = fw_paths_tagged(K, T, "hp_fw_b")
     log(f"\ngenerated {len(fw)} FW + {len(fw_b)} FW(null) paths; fitting tight GARCH...")
     gc = garch_match(fw, MASTER_SEED, rank_match=True)
     n = min(len(fw), len(fw_b), len(gc))
