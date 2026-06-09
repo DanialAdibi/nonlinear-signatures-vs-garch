@@ -1,0 +1,40 @@
+================================================================
+HARDER PAIR: FW (behavioural) vs GJR-GARCH null -- LOOSE vs TIGHT match
+K=300, T=2500, embedding (m=4, tau=1), seed=20240601
+================================================================
+
+generated 300 FW paths; fitting GARCH (loose) + rank-matched (tight)...
+got 300 loose, 300 tight GARCH paths (300 retained after pairing)
+
+LOOSE = GARCH-t fit (marginal only approximately matched).
+
+[LOOSE]  R1 max d = 0.86   R2 max d = 0.44
+   AUC_R1 = 0.812   AUC_R2 = 0.702   AUC_combined = 0.817   Delta(R2-R1) = -0.109
+
+TIGHT = LOOSE + rank-remap onto FW's exact marginal (moments matched).
+
+[TIGHT]  R1 max d = 0.60   R2 max d = 0.45
+   AUC_R1 = 0.759   AUC_R2 = 0.732   AUC_combined = 0.764   Delta(R2-R1) = -0.027
+   per-feature separation (Cohen's d), sorted:
+      R1  acf_abs_10       d = 0.60
+      R1  acf_abs_1        d = 0.55
+      R1  acf_abs_5        d = 0.52
+      R2  bds              d = 0.45
+      R2  lambda1          d = 0.36
+      R2  lam              d = 0.24
+      R1  acf_ret_max      d = 0.23
+      R2  d2               d = 0.12
+      R2  lyap_r2          d = 0.09
+      R2  det              d = 0.07
+      R2  d2_r2            d = 0.05
+      R1  std              d = 0.00
+      R1  hill_alpha       d = 0.00
+      R1  excess_kurtosis  d = 0.00
+
+Reading the TIGHT row -- the decisive test:
+  * If AUC_R1 -> ~0.5 and AUC_R2 stays high: the behavioural mechanism
+    leaves a nonlinear fingerprint GARCH lacks (positive result).
+  * If both -> ~0.5: once moments are matched, FW and GARCH are
+    indistinguishable even nonlinearly (clean negative).
+  * R2 max d is itself informative: how separated are the nonlinear
+    features after the marginal is forced to match.

@@ -1,0 +1,26 @@
+# Exact pins for reproducing the canonical run to the digit.
+# Captured from the environment that generated the validated results.
+#
+# Interpreter: Python 3.13.13
+#
+# Install into a CLEAN virtual environment:
+#     python -m venv .venv
+#     .venv/Scripts/activate      (Windows)   |   source .venv/bin/activate   (Unix)
+#     pip install -r requirements_frozen.txt
+#
+# These six packages drive every number in the study:
+#   - numpy        : RNG (default_rng / PCG64, stream-stable) + core numerics
+#   - scipy        : spatial (cKDTree, pdist), stats, and the arch optimizer backend
+#   - scikit-learn : classifier + cross-validated AUC (solver/CV affect AUC decimals)
+#   - arch         : GJR-GARCH / EGARCH fit + simulate (the GARCH null; version-sensitive)
+#   - pandas       : arch's data containers (major-version sensitive: 2.x vs 3.x)
+#   - statsmodels  : arch dependency
+# Their sub-dependencies (patsy, packaging, etc.) are resolved by pip at install
+# time and do not affect the numerics.
+
+numpy==2.3.3
+scipy==1.16.2
+scikit-learn==1.7.2
+arch==8.0.0
+pandas==2.3.3
+statsmodels==0.14.5

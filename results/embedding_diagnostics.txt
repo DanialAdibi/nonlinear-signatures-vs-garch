@@ -1,0 +1,77 @@
+================================================================
+EMBEDDING DIAGNOSTICS -- is the rising Delta-with-m real or artifact?
+K=300, T=2500, seed=20240601
+================================================================
+
+generated 300 FW + 300 FW(null) paths; fitting tight GARCH...
+got 300 tight-GARCH paths; running diagnostics (n=300 per group)...
+
+[NULL: FW vs FW (artifact test)]   tau=1
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.529    0.445  -0.083     0.09
+   4    0.529    0.472  -0.056     0.09
+   5    0.529    0.458  -0.071     0.09
+   6    0.529    0.422  -0.106     0.09
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+            d2_r2    0.01    0.13    0.14    0.01
+               d2    0.05    0.01    0.07    0.06
+              det    0.07    0.05    0.05    0.06
+              bds    0.07    0.07    0.07    0.07
+          lyap_r2    0.04    0.01    0.05    0.02
+          lambda1    0.04    0.02    0.02    0.05
+              lam    0.04    0.02    0.02    0.03
+
+[FW vs tight-GARCH -- tau=1, K=300]   tau=1
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.759    0.698  -0.061     0.60
+   4    0.759    0.732  -0.027     0.60
+   5    0.759    0.752  -0.007     0.60
+   6    0.759    0.786  +0.026     0.60
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+              bds    0.45    0.45    0.45    0.45
+              lam    0.18    0.24    0.31    0.39
+               d2    0.01    0.12    0.29    0.37
+          lambda1    0.28    0.36    0.32    0.29
+            d2_r2    0.06    0.05    0.18    0.17
+              det    0.10    0.07    0.02    0.05
+          lyap_r2    0.05    0.09    0.00    0.08
+
+[FW vs tight-GARCH -- tau=2 (overlap test)]   tau=2
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.759    0.730  -0.030     0.60
+   4    0.759    0.760  +0.000     0.60
+   5    0.759    0.799  +0.040     0.60
+   6    0.759    0.829  +0.070     0.60
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+              lam    0.22    0.33    0.44    0.51
+               d2    0.02    0.06    0.28    0.46
+              bds    0.45    0.45    0.45    0.45
+          lambda1    0.38    0.36    0.43    0.41
+              det    0.01    0.11    0.20    0.29
+            d2_r2    0.09    0.03    0.09    0.25
+          lyap_r2    0.17    0.04    0.05    0.06
+
+[NULL: FW vs FW -- tau=2]   tau=2
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.529    0.503  -0.026     0.09
+   4    0.529    0.465  -0.063     0.09
+   5    0.529    0.488  -0.040     0.09
+   6    0.529    0.501  -0.027     0.09
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+            d2_r2    0.04    0.01    0.07    0.15
+          lyap_r2    0.14    0.13    0.15    0.13
+               d2    0.05    0.05    0.10    0.11
+              det    0.06    0.07    0.08    0.08
+              lam    0.02    0.04    0.07    0.07
+              bds    0.07    0.07    0.07    0.07
+          lambda1    0.02    0.02    0.06    0.01
+
+READING:
+  REAL  if NULL stays ~0 across m AND the FW-vs-GARCH rise survives tau=2.
+  ARTIFACT if NULL climbs with m OR the rise vanishes at tau=2.
+  (AUC_R1 must be constant across m within each block -- it ignores the
+   embedding; any variation flags a bug.)

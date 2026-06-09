@@ -1,0 +1,371 @@
+[2026-06-06 18:21:40] ########## PHASE 0-6 RUN START (reviewed phases only) ##########
+[2026-06-06 18:21:40] python=Python 3.13.13
+[2026-06-06 18:21:41] key packages: arch==8.0.0 numpy==2.3.3 pandas==2.3.3 scikit-learn==1.7.2 scipy==1.16.2 statsmodels==0.14.5 
+[2026-06-06 18:21:43] clearing results/cache/ so embedding_extend rebuilds paths under current code
+
+[2026-06-06 18:21:43] ================ STAGE 1  validation gates (Phases 1-3) ================
+[2026-06-06 18:21:43] >>> START: validate_estimators (Phase 3 estimator gate)
+Phase-3 estimator validation gate
+master_seed=20240601
+
+  [PASS] Henon lambda1          lambda1=+0.406 (exp ~0.42), R2=0.999 (exp >0.95)
+  [PASS] Lorenz lambda1         lambda1=+0.112 (per-sample, >0), R2=0.972 (exp >0.90)
+  [PASS] iid_noise (no scaling) lambda1=+0.198 (floor), R2=0.457 (exp <0.7)
+  [PASS] ar1 (no scaling)       lambda1=+0.211 (floor), R2=0.490 (exp <0.7)
+
+  [PASS] d2 (chaos<noise)       henon=1.25 lorenz=1.69 noise=2.81 ar1=2.78
+  [PASS] DET (chaos>noise)      henon=0.68 lorenz=0.73 noise=0.27 ar1=0.30
+  [PASS] LAM (laminar>noise)    sine=0.98 (exp >0.5), noise=0.07 (exp <0.2)
+  [PASS] BDS (iid only for noise) henon=+69 lorenz=+97 noise=-1.0 ar1=+19
+
+GATE PASSES: estimators behave correctly on known systems.
+Note: slope alone does not separate chaos from noise; slope + R^2 does.
+[2026-06-06 18:21:48] <<< DONE : validate_estimators (Phase 3 estimator gate)  (5s)
+[2026-06-06 18:21:49] >>> START: check_fw (Phase 1 generator gate)
+Franke-Westerhoff DCA-HPM model -- stylized-fact diagnostic
+n=5000, burn_in=1000, master_seed=20240601
+(parameters are the verified FW 2012 Table 1 DCA-HPM MSM estimates; see fw_ssv.py)
+
+=== FW mu=0.001 ===
+  n=4999  mean=+0.0000  std=0.0017
+  excess kurtosis : +0.019   (>0 = fat tails)
+  Hill tail alpha : 5.926        (~2-4 = heavy)
+  ACF returns      lags (1, 2, 3, 5, 10): [-0.003, -0.007, -0.003, -0.023, -0.001]  (~0 expected)
+  ACF sq-returns   lags (1, 5, 10, 25): [-0.028, -0.006, +0.025, +0.004]  (>0 = vol cluster)
+  ACF abs-returns  lags (1, 5, 10, 25): [-0.032, -0.013, +0.026, +0.005]
+  -> tails ~thin | returns uncorrelated OK | no vol-clustering
+
+=== FW mu=0.01  <-- default, market-like ===
+  n=4999  mean=-0.0001  std=0.0090
+  excess kurtosis : +1.632   (>0 = fat tails)
+  Hill tail alpha : 4.148        (~2-4 = heavy)
+  ACF returns      lags (1, 2, 3, 5, 10): [-0.035, +0.014, -0.016, +0.003, -0.016]  (~0 expected)
+  ACF sq-returns   lags (1, 5, 10, 25): [+0.189, +0.170, +0.138, +0.093]  (>0 = vol cluster)
+  ACF abs-returns  lags (1, 5, 10, 25): [+0.157, +0.145, +0.136, +0.089]
+  -> fat-tails OK | returns uncorrelated OK | vol-clustering OK
+
+=== FW mu=0.05 ===
+  n=4999  mean=+0.0000  std=0.0426
+  excess kurtosis : +1.128   (>0 = fat tails)
+  Hill tail alpha : 4.202        (~2-4 = heavy)
+  ACF returns      lags (1, 2, 3, 5, 10): [+0.050, -0.019, +0.022, -0.018, +0.000]  (~0 expected)
+  ACF sq-returns   lags (1, 5, 10, 25): [+0.165, +0.053, +0.054, +0.002]  (>0 = vol cluster)
+  ACF abs-returns  lags (1, 5, 10, 25): [+0.118, +0.052, +0.041, -0.005]
+  -> fat-tails OK | returns uncorrelated OK | vol-clustering OK
+[2026-06-06 18:21:50] <<< DONE : check_fw (Phase 1 generator gate)  (1s)
+[2026-06-06 18:21:50] >>> START: check_fw_pair (Phase 2 DCA/TPA separability)
+DCA vs TPA moment-separability diagnostic (faithful FW TPA, FW 2012 p.9)
+80 paths each, n=2500, master_seed=20240601
+
+Per-moment Cohen's d at nu = 0.05 (FW 2012 value):
+moment                   DCA mean+/-sd         TPA mean+/-sd   Cohen-d
+std                  0.0099 +/-0.0012      0.0073 +/-0.0001    3.10
+excess_kurtosis      1.6712 +/-0.5118     -0.0032 +/-0.0987    4.54
+hill_alpha           4.0539 +/-0.5053      6.0244 +/-0.4641    4.06
+acf_abs_mean         0.1321 +/-0.0370     -0.0022 +/-0.0083    5.01
+acf_ret_max          0.0369 +/-0.0149      0.0309 +/-0.0095    0.48
+
+Max standardised gap (Cohen's d) across moments, vs nu:
+  nu=0.05  max d =  5.01  <- FW 2012 value
+  nu=0.1   max d =  4.91
+  nu=0.3   max d =  4.88
+  nu=1.0   max d =  0.17  <- TPA -> DCA limit
+
+Reading: the faithful DCA/TPA pair separates strongly on standard
+moments wherever it is dynamically distinct (large d at nu <= 0.30),
+and is confusable only as nu -> 1 where TPA collapses into DCA (d small).
+So moments already capture the behavioural difference; this is the
+premise of Finding 1. The matched-moment test in which nonlinear
+features could matter is constructed against a GARCH null instead
+(experiment/harder_pair.py).
+[2026-06-06 18:22:09] <<< DONE : check_fw_pair (Phase 2 DCA/TPA separability)  (19s)
+
+[2026-06-06 18:22:09] ================ STAGE 2  Phase-4 experiments (Finding 1 + robustness) ================
+[2026-06-06 18:22:09] >>> START: discriminate (Finding 1: DCA vs TPA)
+Phase-4 discrimination experiment: DCA vs TPA
+T=2500, K=120/model, embedding (m=4, tau=1), seed=20240601
+
+generated 120 DCA paths; sweeping TPA nu...
+
+    nu  maxR1_d  maxR2_d   AUC_R1   AUC_R2  AUC_all
+  0.02     4.30     3.06    0.992    0.984    0.989
+  0.05     4.39     3.18    0.993    0.984    0.990
+   0.1     4.28     3.20    0.993    0.989    0.991
+   0.3     4.48     3.25    0.994    0.986    0.992
+   0.6     4.40     3.19    0.993    0.987    0.991
+
+NULL CONTROL (DCA vs DCA): AUC_all = 0.492  (PASS ~0.5)
+
+Reading: AUC ~ 0.5 = inseparable. With the faithful TPA the DCA/TPA pair separates strongly on the standard moments wherever it differs (AUC_R1 ~ 0.99), so the nonlinear features have no gap to fill: this is a baseline negative on an easily-separated pair, not a confusable-pair result. The matched-moment test where Referee 2 could in principle matter is Finding 2 (FW vs the GARCH null, experiment/harder_pair.py).
+[2026-06-06 18:37:50] <<< DONE : discriminate (Finding 1: DCA vs TPA)  (941s)
+[2026-06-06 18:37:50] >>> START: robustness (T-sweep + positive control + richer)
+================================================================
+ROBUSTNESS BATTERY
+K=80, master_seed=20240601
+================================================================
+
+[A] T-SWEEP  (DCA vs TPA nu=0.05; faithful pair is separable -- R2 must not overtake R1)
+      T   AUC_R1   AUC_R2  AUC_all
+   2500    0.999    0.975    0.994
+   5000    1.000    0.999    1.000
+  10000    1.000    1.000    1.000
+
+[B] POSITIVE CONTROL  (chaotic system vs its IAAFT surrogate)
+    The chaotic systems use random initial conditions per seed, so the
+    'real' class has genuine within-class variance (not one cloned path).
+    Essential check: R2 separates real from surrogate at HIGH AUC, i.e.
+    the pipeline detects nonlinear structure when it exists (not blind).
+    Noiseless, both R1 and R2 saturate (~1.0). Under heavy observational
+    noise R2 stays high (Henon ~1.0; Lorenz ~0.95, rising toward 1.0 with
+    more data -- the Lorenz shortfall is a power effect, not a failure).
+    The R2-vs-R1 MARGIN is system-dependent and not the point: R1's
+    |return| autocorrelation is itself nonlinear-sensitive, so R1 can also
+    separate (perfectly for Lorenz, where acf_abs survives the noise).
+  system  noise   AUC_R1   AUC_R2
+   henon    0.0    1.000    1.000
+   henon    1.0    0.954    0.999
+  lorenz    0.0    1.000    1.000
+  lorenz    1.0    1.000    0.947
+
+[C] RICHER FEATURES  (DCA vs TPA nu=0.05, T=5000; basic R2 vs R2+entropy)
+    AUC_R1            = 1.000
+    AUC_R2 (basic)    = 0.996
+    AUC_R2 (extended) = 0.992
+
+DONE. Reading: the null is robust if (A) AUC_R2 stays <= AUC_R1 as T
+grows, (B) the positive control shows R2 high (pipeline can detect
+nonlinearity), and (C) richer features do not lift AUC_R2 above AUC_R1.
+
+[saved to results/robustness.txt]
+[2026-06-06 19:02:23] <<< DONE : robustness (T-sweep + positive control + richer)  (1473s)
+
+[2026-06-06 19:02:23] ================ STAGE 3  Phase-5 experiment (Finding 2: FW vs GARCH, with bootstrap CI) ================
+[2026-06-06 19:02:23] >>> START: harder_pair (Finding 2 + paired bootstrap CI)
+================================================================
+HARDER PAIR: FW (behavioural) vs GJR-GARCH null -- LOOSE vs TIGHT match
+K=300, T=2500, embedding (m=4, tau=1), seed=20240601
+================================================================
+
+generated 300 FW paths; fitting GARCH (loose) + rank-matched (tight)...
+got 300 loose, 300 tight GARCH paths (300 retained after pairing)
+
+LOOSE = GARCH-t fit (marginal only approximately matched).
+
+[LOOSE]  R1 max d = 0.86   R2 max d = 0.44
+   AUC_R1 = 0.812   AUC_R2 = 0.702   AUC_combined = 0.817   Delta(R2-R1) = -0.109
+
+TIGHT = LOOSE + rank-remap onto FW's exact marginal (moments matched).
+
+[TIGHT]  R1 max d = 0.60   R2 max d = 0.45
+   AUC_R1 = 0.759   AUC_R2 = 0.732   AUC_combined = 0.764   Delta(R2-R1) = -0.027
+   per-feature separation (Cohen's d), sorted:
+      R1  acf_abs_10       d = 0.60
+      R1  acf_abs_1        d = 0.55
+      R1  acf_abs_5        d = 0.52
+      R2  bds              d = 0.45
+      R2  lambda1          d = 0.36
+      R2  lam              d = 0.24
+      R1  acf_ret_max      d = 0.23
+      R2  d2               d = 0.12
+      R2  lyap_r2          d = 0.09
+      R2  det              d = 0.07
+      R2  d2_r2            d = 0.05
+      R1  std              d = 0.00
+      R1  hill_alpha       d = 0.00
+      R1  excess_kurtosis  d = 0.00
+
+[TIGHT] paired bootstrap on Delta = AUC_R2 - AUC_R1
+   (out-of-fold scores, 2000 resamples of n=300 pairs)
+   AUC_R1(oof) = 0.758   AUC_R2(oof) = 0.737   Delta(oof) = -0.021
+   Delta 95% CI = [-0.059, +0.019]   P(Delta>0) = 0.142
+   => CI brackets 0: once the marginal is matched, FW and GARCH are
+      statistically indistinguishable on the AUC difference (tie).
+
+Reading the TIGHT row -- the decisive test:
+  * If AUC_R1 -> ~0.5 and AUC_R2 stays high: the behavioural mechanism
+    leaves a nonlinear fingerprint GARCH lacks (positive result).
+  * If both -> ~0.5: once moments are matched, FW and GARCH are
+    indistinguishable even nonlinearly (clean negative).
+  * R2 max d is itself informative: how separated are the nonlinear
+    features after the marginal is forced to match.
+
+[saved to results/harder_pair_tight.txt]
+[2026-06-06 19:21:57] <<< DONE : harder_pair (Finding 2 + paired bootstrap CI)  (1173s)
+
+[2026-06-06 19:21:57] ================ STAGE 4  Phase-6 experiments (embedding sweep / diagnostics / extension) ================
+[2026-06-06 19:21:57] >>> START: embedding_sweep (m=3-6 at K=120, exploratory)
+================================================================
+EMBEDDING-DIMENSION SWEEP (TIGHT FW vs rank-matched GARCH)
+K=120, T=2500, tau=1, seed=20240601
+================================================================
+
+generated 120 FW + 120 tight-GARCH paths; sweeping m...
+
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.736    0.693  -0.042     0.54
+   4    0.736    0.729  -0.007     0.54
+   5    0.736    0.764  +0.029     0.54
+   6    0.736    0.788  +0.052     0.54
+
+   R2 per-feature Cohen's d by m (which nonlinear feature carries any gap):
+          feature     m=3     m=4     m=5     m=6
+              bds    0.52    0.52    0.52    0.52
+              lam    0.21    0.27    0.35    0.43
+               d2    0.10    0.11    0.30    0.37
+          lambda1    0.16    0.30    0.29    0.27
+            d2_r2    0.07    0.07    0.30    0.21
+              det    0.06    0.01    0.08    0.13
+          lyap_r2    0.03    0.08    0.00    0.04
+
+Reading: if Delta (AUC_R2 - AUC_R1) stays positive and similar across m,
+the m=4 choice is not driving the result; the per-feature table shows which
+nonlinear feature carries the gap and whether it grows with m. If Delta
+swings sign with m, the result is embedding-dependent and must be reported
+as such. NOTE: at K=120 the levels are inflated by the small-sample effect
+seen in the hub (Delta shrinks toward zero as K grows to 300); only the
+trend across m is informative here, not the absolute Delta.
+
+[saved to results/embedding_sweep.txt]
+[2026-06-06 19:31:22] <<< DONE : embedding_sweep (m=3-6 at K=120, exploratory)  (565s)
+[2026-06-06 19:31:22] >>> START: embedding_diagnostics (artifact controls, K=300)
+================================================================
+EMBEDDING DIAGNOSTICS -- is the rising Delta-with-m real or artifact?
+K=300, T=2500, seed=20240601
+================================================================
+
+generated 300 FW + 300 FW(null) paths; fitting tight GARCH...
+got 300 tight-GARCH paths; running diagnostics (n=300 per group)...
+
+[NULL: FW vs FW (artifact test)]   tau=1
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.529    0.445  -0.083     0.09
+   4    0.529    0.472  -0.056     0.09
+   5    0.529    0.458  -0.071     0.09
+   6    0.529    0.422  -0.106     0.09
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+            d2_r2    0.01    0.13    0.14    0.01
+               d2    0.05    0.01    0.07    0.06
+              det    0.07    0.05    0.05    0.06
+              bds    0.07    0.07    0.07    0.07
+          lyap_r2    0.04    0.01    0.05    0.02
+          lambda1    0.04    0.02    0.02    0.05
+              lam    0.04    0.02    0.02    0.03
+
+[FW vs tight-GARCH -- tau=1, K=300]   tau=1
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.759    0.698  -0.061     0.60
+   4    0.759    0.732  -0.027     0.60
+   5    0.759    0.752  -0.007     0.60
+   6    0.759    0.786  +0.026     0.60
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+              bds    0.45    0.45    0.45    0.45
+              lam    0.18    0.24    0.31    0.39
+               d2    0.01    0.12    0.29    0.37
+          lambda1    0.28    0.36    0.32    0.29
+            d2_r2    0.06    0.05    0.18    0.17
+              det    0.10    0.07    0.02    0.05
+          lyap_r2    0.05    0.09    0.00    0.08
+
+[FW vs tight-GARCH -- tau=2 (overlap test)]   tau=2
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.759    0.730  -0.030     0.60
+   4    0.759    0.760  +0.000     0.60
+   5    0.759    0.799  +0.040     0.60
+   6    0.759    0.829  +0.070     0.60
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+              lam    0.22    0.33    0.44    0.51
+               d2    0.02    0.06    0.28    0.46
+              bds    0.45    0.45    0.45    0.45
+          lambda1    0.38    0.36    0.43    0.41
+              det    0.01    0.11    0.20    0.29
+            d2_r2    0.09    0.03    0.09    0.25
+          lyap_r2    0.17    0.04    0.05    0.06
+
+[NULL: FW vs FW -- tau=2]   tau=2
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.529    0.503  -0.026     0.09
+   4    0.529    0.465  -0.063     0.09
+   5    0.529    0.488  -0.040     0.09
+   6    0.529    0.501  -0.027     0.09
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+            d2_r2    0.04    0.01    0.07    0.15
+          lyap_r2    0.14    0.13    0.15    0.13
+               d2    0.05    0.05    0.10    0.11
+              det    0.06    0.07    0.08    0.08
+              lam    0.02    0.04    0.07    0.07
+              bds    0.07    0.07    0.07    0.07
+          lambda1    0.02    0.02    0.06    0.01
+
+READING:
+  REAL  if NULL stays ~0 across m AND the FW-vs-GARCH rise survives tau=2.
+  ARTIFACT if NULL climbs with m OR the rise vanishes at tau=2.
+  (AUC_R1 must be constant across m within each block -- it ignores the
+   embedding; any variation flags a bug.)
+
+[saved to results/embedding_diagnostics.txt]
+[2026-06-06 20:54:55] <<< DONE : embedding_diagnostics (artifact controls, K=300)  (5013s)
+[2026-06-06 20:54:55] >>> START: embedding_extend (m=7,8 + faithfulness, K=300)
+======================================================================
+EMBEDDING EXTENSION -- does the nonlinear advantage plateau or keep rising?
+K=300, T=2500, tau=1, seed=20240601
+======================================================================
+no cache found -- generating paths + fitting tight GARCH (one-time, slow)...
+cached 300 paths per group to results/cache/ (future runs are fast)
+n=300 per group; sweeping m=[7, 8, 6, 5, 4, 3] at tau=1
+(m=7,8 first = the conclusion; m=6 = faithfulness check vs prior +0.083)
+
+   m |  FW-vs-GARCH Delta |   NULL Delta
+--------------------------------------------
+   7 |             +0.046 |       -0.058
+   8 |             +0.073 |       -0.073
+   6 |             +0.026 |       -0.106   <- faithfulness check (must match embedding_diagnostics m=6, same run)
+   5 |             -0.007 |       -0.071
+   4 |             -0.027 |       -0.056
+   3 |             -0.061 |       -0.083
+
+   FW-vs-GARCH -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+              lam    0.18    0.24    0.31    0.39    0.49    0.58
+               d2    0.01    0.12    0.29    0.37    0.47    0.56
+              bds    0.45    0.45    0.45    0.45    0.45    0.45
+          lambda1    0.28    0.36    0.32    0.29    0.33    0.37
+            d2_r2    0.06    0.05    0.18    0.17    0.07    0.26
+              det    0.10    0.07    0.02    0.05    0.10    0.19
+          lyap_r2    0.05    0.09    0.00    0.08    0.10    0.17
+
+   NULL (FW vs FW) -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+            d2_r2    0.01    0.13    0.14    0.01    0.03    0.03
+               d2    0.05    0.01    0.07    0.06    0.12    0.05
+          lyap_r2    0.04    0.01    0.05    0.02    0.10    0.12
+              det    0.07    0.05    0.05    0.06    0.07    0.08
+              bds    0.07    0.07    0.07    0.07    0.07    0.07
+              lam    0.04    0.02    0.02    0.03    0.04    0.06
+          lambda1    0.04    0.02    0.02    0.05    0.04    0.01
+
+Reading: if the FW-vs-GARCH Delta and its leading R2 feature level off at
+high m -> the signal SATURATES (that m is the regime structure's
+dimensionality). If they keep climbing -> unbounded growth, needs a
+mechanism. The NULL Delta and its R2 features must stay flat (~0) at all m,
+confirming high-m does not manufacture separation. The per-feature tables
+show which nonlinear feature carries the trend (not assumed to be laminarity).
+
+[saved to results/embedding_extend.txt]
+[2026-06-06 21:56:54] <<< DONE : embedding_extend (m=7,8 + faithfulness, K=300)  (3719s)
+
+[2026-06-06 21:56:54] ================ COMPLETE (Phases 0-6) ================
+[2026-06-06 21:56:54] reviewed-phase run finished. Result files in results/:
+    results/embedding_diagnostics.txt
+    results/embedding_extend.txt
+    results/embedding_sweep.txt
+    results/harder_pair_tight.txt
+    results/requirements_frozen.txt
+    results/robustness.txt
+[2026-06-06 21:56:54] NOTE: Phases 7-10 (leverage arm/sweep, residual probes, cache-integrity,
+[2026-06-06 21:56:54]       BDS bootstrap, EGARCH null, check_cont_facts) were NOT run -- not yet
+[2026-06-06 21:56:54]       reviewed. Use run_all.sh after those files are reviewed.
+[2026-06-06 21:56:54] ########## PHASE 0-6 RUN END ##########

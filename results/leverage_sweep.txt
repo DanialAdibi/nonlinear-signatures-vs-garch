@@ -1,0 +1,19 @@
+========================================================================
+LEVERAGE SWEEP -- does the nonlinear edge decline smoothly with alpha_lev?
+K=500, T=2500, m_report=[6, 8], tau=1, seed=master
+========================================================================
+Expect: as alpha_lev rises, gamma_hat rises (null engages leverage) and
+DeltaAUC falls from the symmetric ceiling toward ~0 (edge was mis-spec).
+
+alpha_lev  gamma_hat   g>0   dAUC(m6)   dAUC(m8)  lam(m6)  lam(m8)   d2(m6)   d2(m8)    null(m8)
+------------------------------------------------------------------------------------------------
+        0    -0.0001  0.49     +0.059     +0.108     0.46     0.59     0.41     0.55      -0.021
+       10    +0.0068  0.56     +0.095     +0.131     0.53     0.67     0.35     0.57      -0.001
+       20    +0.0210  0.68     +0.084     +0.128     0.46     0.63     0.39     0.56      +0.022
+       30    +0.0300  0.81     +0.079     +0.120     0.44     0.56     0.29     0.47      +0.014
+       50    +0.0634  0.90     +0.010     +0.016     0.39     0.47     0.33     0.41      +0.004
+
+Reading: a monotone rise in gamma_hat alongside a monotone fall in dAUC
+(toward 0) across alpha_lev demonstrates the nonlinear edge is governed by
+the null's mis-specification for asymmetry -- the airtight version of the
+two-endpoint result. The null column must stay ~0 throughout (no artefact).

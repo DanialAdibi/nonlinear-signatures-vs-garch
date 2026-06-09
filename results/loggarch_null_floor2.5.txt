@@ -1,0 +1,38 @@
+================================================================================
+log-GARCH null -- second LOG-family witness for the additive-vs-log axis
+K=300  T=2500  alpha_lev=50.0  null=asymmetric log-GARCH-t  FLOOR_PCT=2.5
+================================================================================
+loaded 300 FW + 300 FWb + 300 GJR (cached)
+fitting log-GARCH null (one-time custom QML, rank_match=True, slow) ...
+  aligned 300 paths per group; optimiser-converged fits: 300/300
+  persistence alpha+beta: mean=0.982  med=0.990  frac>0.98=0.74  (stationary if < 1)
+  asymmetry xi: mean=-0.0289  (82% negative -> equity leverage sign engaged)
+
+FW(leverage) vs nulls, by embedding dimension m  (dAUC = AUC_R2 - AUC_R1):
+    m   GJR dAUC  logGARCH dAUC     (R1     R2)    A-vs-A
+    3     -0.039         +0.016   0.793   0.809    +0.025
+    5     -0.001         +0.065   0.793   0.858    -0.009
+    8     +0.016         +0.110   0.793   0.903    -0.017
+
+Per-feature Cohen's d at m=8 -- log-GARCH vs GJR (additive, in-run) and
+EGARCH (log, cited Step 2).  log-GARCH near EGARCH = log side confirmed:
+  feature     logGARCH      GJR   EGARCH
+  lam             0.90     0.43     0.88
+  d2              0.80     0.38     0.82
+  bds             0.49     0.36     0.30
+  det             0.44     0.25     0.60
+  d2_r2           0.17     0.11     0.26
+  lyap_r2         0.15     0.10     0.13
+  lambda1         0.08     0.01     0.14
+
+================================================================================
+ANCHORS at m=8:  GJR/APARCH (additive) ~+0.016 tie   |   EGARCH (log) +0.146 separates
+  in-run GJR re-score: +0.016  (faithfulness vs canonical +0.016)
+  log-GARCH (second log null): +0.110
+VERDICT: log-GARCH SEPARATES like EGARCH -> the LOG side is CONFIRMED by a second,
+  independent log-variance null with a different news-impact transform. The
+  additive-vs-log axis is LOCKED: two additive nulls (GJR, APARCH) tie, two log
+  nulls (EGARCH, log-GARCH) separate. The recurrence features detect conditional-
+  variance FUNCTIONAL-FORM (additive vs log) mis-specification that the moments miss.
+  This can now be stated as a finding, not a conjecture.
+================================================================================

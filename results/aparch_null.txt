@@ -1,0 +1,40 @@
+================================================================================
+APARCH null -- isolating the additive-vs-log axis (EGARCH-puzzle follow-up)
+K=300  T=2500  alpha_lev=50.0  null=APARCH(1,1,1)-t  (additive power family)
+================================================================================
+loaded 300 FW + 300 FWb + 300 GJR (cached)
+fitting APARCH null (one-time, rank_match=True, slow) ...
+  aligned 300 paths per group
+  APARCH delta (power): mean=1.870  med=1.687  (2 = GJR-like variance; 1 = std-dev/TARCH)
+  APARCH gamma (asymmetry): mean=+0.3708  (88% positive -> equity leverage sign engaged)
+
+FW(leverage) vs nulls, by embedding dimension m  (dAUC = AUC_R2 - AUC_R1):
+    m   GJR dAUC  APARCH dAUC     (R1     R2)    A-vs-A
+    3     -0.039       -0.037   0.725   0.688    +0.025
+    5     -0.001       -0.042   0.725   0.683    -0.009
+    8     +0.016       +0.015   0.725   0.740    -0.017
+
+Per-feature Cohen's d at m=8 -- APARCH vs the GJR (additive, in-run) and
+EGARCH (log, cited from Step 2) anchors.  APARCH near GJR = additive ties;
+APARCH near EGARCH = additive separates:
+  feature      APARCH      GJR   EGARCH
+  d2             0.53     0.38     0.82
+  lam            0.52     0.43     0.88
+  det            0.33     0.25     0.60
+  d2_r2          0.21     0.11     0.26
+  lambda1        0.11     0.01     0.14
+  lyap_r2        0.04     0.10     0.13
+  bds            0.03     0.36     0.30
+
+================================================================================
+ANCHORS at m=8:  GJR (additive) +0.016 ties   |   EGARCH (log) +0.146 separates
+  in-run GJR re-score: +0.016  (faithfulness check vs canonical +0.016)
+  APARCH (additive power): +0.015
+VERDICT: APARCH TIES like GJR -> the additive family collapses the edge; only the
+  LOG-variance null (EGARCH) separates. This SUPPORTS the additive-vs-log axis: the
+  structural difference the recurrence features detect tracks the variance recursion
+  form (additive vs log), not leverage-awareness per se. Two additive leverage-aware
+  nulls (GJR, APARCH) tie; one log-variance leverage-aware null (EGARCH) separates.
+  NB this is now a positive, named characterisation -- worth confirming with a second
+  log-family null (e.g. FIEGARCH/log-GARCH) before stating it strongly in the paper.
+================================================================================

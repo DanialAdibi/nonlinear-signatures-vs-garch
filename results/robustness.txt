@@ -1,0 +1,36 @@
+================================================================
+ROBUSTNESS BATTERY
+K=80, master_seed=20240601
+================================================================
+
+[A] T-SWEEP  (DCA vs TPA nu=0.05; faithful pair is separable -- R2 must not overtake R1)
+      T   AUC_R1   AUC_R2  AUC_all
+   2500    0.999    0.975    0.994
+   5000    1.000    0.999    1.000
+  10000    1.000    1.000    1.000
+
+[B] POSITIVE CONTROL  (chaotic system vs its IAAFT surrogate)
+    The chaotic systems use random initial conditions per seed, so the
+    'real' class has genuine within-class variance (not one cloned path).
+    Essential check: R2 separates real from surrogate at HIGH AUC, i.e.
+    the pipeline detects nonlinear structure when it exists (not blind).
+    Noiseless, both R1 and R2 saturate (~1.0). Under heavy observational
+    noise R2 stays high (Henon ~1.0; Lorenz ~0.95, rising toward 1.0 with
+    more data -- the Lorenz shortfall is a power effect, not a failure).
+    The R2-vs-R1 MARGIN is system-dependent and not the point: R1's
+    |return| autocorrelation is itself nonlinear-sensitive, so R1 can also
+    separate (perfectly for Lorenz, where acf_abs survives the noise).
+  system  noise   AUC_R1   AUC_R2
+   henon    0.0    1.000    1.000
+   henon    1.0    0.954    0.999
+  lorenz    0.0    1.000    1.000
+  lorenz    1.0    1.000    0.947
+
+[C] RICHER FEATURES  (DCA vs TPA nu=0.05, T=5000; basic R2 vs R2+entropy)
+    AUC_R1            = 1.000
+    AUC_R2 (basic)    = 0.996
+    AUC_R2 (extended) = 0.992
+
+DONE. Reading: the null is robust if (A) AUC_R2 stays <= AUC_R1 as T
+grows, (B) the positive control shows R2 high (pipeline can detect
+nonlinearity), and (C) richer features do not lift AUC_R2 above AUC_R1.

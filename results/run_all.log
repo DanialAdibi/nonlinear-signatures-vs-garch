@@ -1,0 +1,659 @@
+[2026-06-07 00:07:12] ########## FULL REGENERATION START ##########
+[2026-06-07 00:07:12] leverage sweep K=500 T=2500 ; python=Python 3.13.13
+
+[2026-06-07 00:07:12] ================ STAGE 0  cache reset (no stale paths) ================
+[2026-06-07 00:07:13] deleted results/cache/
+
+[2026-06-07 00:07:13] ================ STAGE 1  validation gates (tools + generator) ================
+[2026-06-07 00:07:13] >>> START: validate_estimators (estimator gate)
+Phase-3 estimator validation gate
+master_seed=20240601
+
+  [PASS] Henon lambda1          lambda1=+0.406 (exp ~0.42), R2=0.999 (exp >0.95)
+  [PASS] Lorenz lambda1         lambda1=+0.112 (per-sample, >0), R2=0.972 (exp >0.90)
+  [PASS] iid_noise (no scaling) lambda1=+0.198 (floor), R2=0.457 (exp <0.7)
+  [PASS] ar1 (no scaling)       lambda1=+0.211 (floor), R2=0.490 (exp <0.7)
+
+  [PASS] d2 (chaos<noise)       henon=1.25 lorenz=1.69 noise=2.81 ar1=2.78
+  [PASS] DET (chaos>noise)      henon=0.68 lorenz=0.73 noise=0.27 ar1=0.30
+  [PASS] LAM (laminar>noise)    sine=0.98 (exp >0.5), noise=0.07 (exp <0.2)
+  [PASS] BDS (iid only for noise) henon=+69 lorenz=+97 noise=-1.0 ar1=+19
+
+GATE PASSES: estimators behave correctly on known systems.
+Note: slope alone does not separate chaos from noise; slope + R^2 does.
+[2026-06-07 00:07:27] <<< DONE : validate_estimators (estimator gate)  (14s)
+[2026-06-07 00:07:27] >>> START: check_fw (generator gate)
+Franke-Westerhoff DCA-HPM model -- stylized-fact diagnostic
+n=5000, burn_in=1000, master_seed=20240601
+(parameters are the verified FW 2012 Table 1 DCA-HPM MSM estimates; see fw_ssv.py)
+
+=== FW mu=0.001 ===
+  n=4999  mean=+0.0000  std=0.0017
+  excess kurtosis : +0.019   (>0 = fat tails)
+  Hill tail alpha : 5.926        (~2-4 = heavy)
+  ACF returns      lags (1, 2, 3, 5, 10): [-0.003, -0.007, -0.003, -0.023, -0.001]  (~0 expected)
+  ACF sq-returns   lags (1, 5, 10, 25): [-0.028, -0.006, +0.025, +0.004]  (>0 = vol cluster)
+  ACF abs-returns  lags (1, 5, 10, 25): [-0.032, -0.013, +0.026, +0.005]
+  -> tails ~thin | returns uncorrelated OK | no vol-clustering
+
+=== FW mu=0.01  <-- default, market-like ===
+  n=4999  mean=-0.0001  std=0.0090
+  excess kurtosis : +1.632   (>0 = fat tails)
+  Hill tail alpha : 4.148        (~2-4 = heavy)
+  ACF returns      lags (1, 2, 3, 5, 10): [-0.035, +0.014, -0.016, +0.003, -0.016]  (~0 expected)
+  ACF sq-returns   lags (1, 5, 10, 25): [+0.189, +0.170, +0.138, +0.093]  (>0 = vol cluster)
+  ACF abs-returns  lags (1, 5, 10, 25): [+0.157, +0.145, +0.136, +0.089]
+  -> fat-tails OK | returns uncorrelated OK | vol-clustering OK
+
+=== FW mu=0.05 ===
+  n=4999  mean=+0.0000  std=0.0426
+  excess kurtosis : +1.128   (>0 = fat tails)
+  Hill tail alpha : 4.202        (~2-4 = heavy)
+  ACF returns      lags (1, 2, 3, 5, 10): [+0.050, -0.019, +0.022, -0.018, +0.000]  (~0 expected)
+  ACF sq-returns   lags (1, 5, 10, 25): [+0.165, +0.053, +0.054, +0.002]  (>0 = vol cluster)
+  ACF abs-returns  lags (1, 5, 10, 25): [+0.118, +0.052, +0.041, -0.005]
+  -> fat-tails OK | returns uncorrelated OK | vol-clustering OK
+[2026-06-07 00:07:30] <<< DONE : check_fw (generator gate)  (3s)
+[2026-06-07 00:07:31] >>> START: check_fw_pair (confusability gate)
+DCA vs TPA moment-separability diagnostic (faithful FW TPA, FW 2012 p.9)
+80 paths each, n=2500, master_seed=20240601
+
+Per-moment Cohen's d at nu = 0.05 (FW 2012 value):
+moment                   DCA mean+/-sd         TPA mean+/-sd   Cohen-d
+std                  0.0099 +/-0.0012      0.0073 +/-0.0001    3.10
+excess_kurtosis      1.6712 +/-0.5118     -0.0032 +/-0.0987    4.54
+hill_alpha           4.0539 +/-0.5053      6.0244 +/-0.4641    4.06
+acf_abs_mean         0.1321 +/-0.0370     -0.0022 +/-0.0083    5.01
+acf_ret_max          0.0369 +/-0.0149      0.0309 +/-0.0095    0.48
+
+Max standardised gap (Cohen's d) across moments, vs nu:
+  nu=0.05  max d =  5.01  <- FW 2012 value
+  nu=0.1   max d =  4.91
+  nu=0.3   max d =  4.88
+  nu=1.0   max d =  0.17  <- TPA -> DCA limit
+
+Reading: the faithful DCA/TPA pair separates strongly on standard
+moments wherever it is dynamically distinct (large d at nu <= 0.30),
+and is confusable only as nu -> 1 where TPA collapses into DCA (d small).
+So moments already capture the behavioural difference; this is the
+premise of Finding 1. The matched-moment test in which nonlinear
+features could matter is constructed against a GARCH null instead
+(experiment/harder_pair.py).
+[2026-06-07 00:08:03] <<< DONE : check_fw_pair (confusability gate)  (32s)
+[2026-06-07 00:08:05] >>> START: check_cont_facts (symmetric)
+==================================================================
+CONT (2001) STYLIZED-FACT CHECK on Franke-Westerhoff (DCA) returns
+variant=SYMMETRIC (alpha_lev=0)
+K=40 paths, T=10000, seed=20240601
+==================================================================
+
+generated 40 FW return paths
+
+[Fact 1] max|ACF(returns)| lags1-10 : 0.020 +/- 0.009   (PASS ~0)
+[Fact 2] Hill tail index alpha      : 3.84 +/- 0.16   (PASS in (2,5))
+[Fact 3] skewness                   : -0.018 +/- 0.057   (~0 => SYMMETRIC (no gain/loss asymmetry, as expected))
+[Fact 4] aggregational Gaussianity (excess kurtosis by horizon):
+           horizon   1: excess kurtosis = +1.86
+           horizon   5: excess kurtosis = +1.74
+           horizon  20: excess kurtosis = +1.48
+           horizon  40: excess kurtosis = +1.29
+           -> PASS (kurtosis declines toward 0)
+[Fact 6/8] ACF(|returns|) by lag (positive, slow decay):
+           lag  1: ACF(|r|) = +0.157
+           lag  5: ACF(|r|) = +0.154
+           lag 10: ACF(|r|) = +0.145
+           lag 25: ACF(|r|) = +0.121
+           -> PASS (positive, slowly decaying)
+[Fact 9] leverage L(tau)=corr(r_t, r_(t+tau)^2), tau=1,2,3,5,10:
+           -0.002  -0.003  +0.001  -0.000  +0.002
+           -> ~0 => NO leverage effect (symmetric model, as expected)
+
+Summary: symmetric FW is expected to PASS Facts 1,2,4,6,8 (the core
+univariate market facts) and NOT reproduce the equity asymmetries
+(Facts 3,9). Facts 10,11 and cross-asset / multifractal facts are out
+of scope for this study.
+[2026-06-07 00:08:11] <<< DONE : check_cont_facts (symmetric)  (6s)
+[2026-06-07 00:08:11] >>> START: check_cont_facts (leverage 50)
+==================================================================
+CONT (2001) STYLIZED-FACT CHECK on Franke-Westerhoff (DCA) returns
+variant=ASYMMETRIC (alpha_lev=50.0)
+K=40 paths, T=10000, seed=20240601
+==================================================================
+
+generated 40 FW return paths
+
+[Fact 1] max|ACF(returns)| lags1-10 : 0.020 +/- 0.007   (PASS ~0)
+[Fact 2] Hill tail index alpha      : 3.78 +/- 0.18   (PASS in (2,5))
+[Fact 3] skewness                   : -0.000 +/- 0.060   (~0 => SYMMETRIC (no gain/loss asymmetry, as expected))
+[Fact 4] aggregational Gaussianity (excess kurtosis by horizon):
+           horizon   1: excess kurtosis = +2.02
+           horizon   5: excess kurtosis = +1.68
+           horizon  20: excess kurtosis = +1.49
+           horizon  40: excess kurtosis = +1.24
+           -> PASS (kurtosis declines toward 0)
+[Fact 6/8] ACF(|returns|) by lag (positive, slow decay):
+           lag  1: ACF(|r|) = +0.150
+           lag  5: ACF(|r|) = +0.110
+           lag 10: ACF(|r|) = +0.104
+           lag 25: ACF(|r|) = +0.088
+           -> PASS (positive, slowly decaying)
+[Fact 9] leverage L(tau)=corr(r_t, r_(t+tau)^2), tau=1,2,3,5,10:
+           +0.004  -0.146  -0.095  -0.050  -0.008
+           -> NEGATIVE => leverage effect PRESENT (as intended for the asymmetric variant)
+
+Summary: the asymmetric variant is intended to ADD a leverage effect
+(Fact 9, conditional/volatility asymmetry) on top of the core facts
+(1,2,4,6,8), while the unconditional return distribution stays
+symmetric (Fact 3 ~ 0) -- leverage is a volatility-response asymmetry,
+distinct from distributional skewness. Facts 10,11 and cross-asset /
+multifractal facts remain out of scope.
+[2026-06-07 00:08:15] <<< DONE : check_cont_facts (leverage 50)  (3s)
+
+[2026-06-07 00:08:15] ================ STAGE 2  experiments in dependency order ================
+[2026-06-07 00:08:15] >>> START: discriminate (Finding 1: DCA vs TPA)
+Phase-4 discrimination experiment: DCA vs TPA
+T=2500, K=120/model, embedding (m=4, tau=1), seed=20240601
+
+generated 120 DCA paths; sweeping TPA nu...
+
+    nu  maxR1_d  maxR2_d   AUC_R1   AUC_R2  AUC_all
+  0.02     4.30     3.06    0.992    0.984    0.989
+  0.05     4.39     3.18    0.993    0.984    0.990
+   0.1     4.28     3.20    0.993    0.989    0.991
+   0.3     4.48     3.25    0.994    0.986    0.992
+   0.6     4.40     3.19    0.993    0.987    0.991
+
+NULL CONTROL (DCA vs DCA): AUC_all = 0.492  (PASS ~0.5)
+
+Reading: AUC ~ 0.5 = inseparable. With the faithful TPA the DCA/TPA pair separates strongly on the standard moments wherever it differs (AUC_R1 ~ 0.99), so the nonlinear features have no gap to fill: this is a baseline negative on an easily-separated pair, not a confusable-pair result. The matched-moment test where Referee 2 could in principle matter is Finding 2 (FW vs the GARCH null, experiment/harder_pair.py).
+[2026-06-07 00:15:50] <<< DONE : discriminate (Finding 1: DCA vs TPA)  (455s)
+[2026-06-07 00:15:50] >>> START: robustness (T-sweep + positive control)
+================================================================
+ROBUSTNESS BATTERY
+K=80, master_seed=20240601
+================================================================
+
+[A] T-SWEEP  (DCA vs TPA nu=0.05; faithful pair is separable -- R2 must not overtake R1)
+      T   AUC_R1   AUC_R2  AUC_all
+   2500    0.999    0.975    0.994
+   5000    1.000    0.999    1.000
+  10000    1.000    1.000    1.000
+
+[B] POSITIVE CONTROL  (chaotic system vs its IAAFT surrogate)
+    The chaotic systems use random initial conditions per seed, so the
+    'real' class has genuine within-class variance (not one cloned path).
+    Essential check: R2 separates real from surrogate at HIGH AUC, i.e.
+    the pipeline detects nonlinear structure when it exists (not blind).
+    Noiseless, both R1 and R2 saturate (~1.0). Under heavy observational
+    noise R2 stays high (Henon ~1.0; Lorenz ~0.95, rising toward 1.0 with
+    more data -- the Lorenz shortfall is a power effect, not a failure).
+    The R2-vs-R1 MARGIN is system-dependent and not the point: R1's
+    |return| autocorrelation is itself nonlinear-sensitive, so R1 can also
+    separate (perfectly for Lorenz, where acf_abs survives the noise).
+  system  noise   AUC_R1   AUC_R2
+   henon    0.0    1.000    1.000
+   henon    1.0    0.954    0.999
+  lorenz    0.0    1.000    1.000
+  lorenz    1.0    1.000    0.947
+
+[C] RICHER FEATURES  (DCA vs TPA nu=0.05, T=5000; basic R2 vs R2+entropy)
+    AUC_R1            = 1.000
+    AUC_R2 (basic)    = 0.996
+    AUC_R2 (extended) = 0.992
+
+DONE. Reading: the null is robust if (A) AUC_R2 stays <= AUC_R1 as T
+grows, (B) the positive control shows R2 high (pipeline can detect
+nonlinearity), and (C) richer features do not lift AUC_R2 above AUC_R1.
+
+[saved to results/robustness.txt]
+[2026-06-07 00:30:14] <<< DONE : robustness (T-sweep + positive control)  (864s)
+[2026-06-07 00:30:14] >>> START: harder_pair (Finding 2: FW vs GARCH, K=300)
+================================================================
+HARDER PAIR: FW (behavioural) vs GJR-GARCH null -- LOOSE vs TIGHT match
+K=300, T=2500, embedding (m=4, tau=1), seed=20240601
+================================================================
+
+generated 300 FW paths; fitting GARCH (loose) + rank-matched (tight)...
+got 300 loose, 300 tight GARCH paths (300 retained after pairing)
+
+LOOSE = GARCH-t fit (marginal only approximately matched).
+
+[LOOSE]  R1 max d = 0.86   R2 max d = 0.44
+   AUC_R1 = 0.812   AUC_R2 = 0.702   AUC_combined = 0.817   Delta(R2-R1) = -0.109
+
+TIGHT = LOOSE + rank-remap onto FW's exact marginal (moments matched).
+
+[TIGHT]  R1 max d = 0.60   R2 max d = 0.45
+   AUC_R1 = 0.759   AUC_R2 = 0.732   AUC_combined = 0.764   Delta(R2-R1) = -0.027
+   per-feature separation (Cohen's d), sorted:
+      R1  acf_abs_10       d = 0.60
+      R1  acf_abs_1        d = 0.55
+      R1  acf_abs_5        d = 0.52
+      R2  bds              d = 0.45
+      R2  lambda1          d = 0.36
+      R2  lam              d = 0.24
+      R1  acf_ret_max      d = 0.23
+      R2  d2               d = 0.12
+      R2  lyap_r2          d = 0.09
+      R2  det              d = 0.07
+      R2  d2_r2            d = 0.05
+      R1  std              d = 0.00
+      R1  hill_alpha       d = 0.00
+      R1  excess_kurtosis  d = 0.00
+
+Reading the TIGHT row -- the decisive test:
+  * If AUC_R1 -> ~0.5 and AUC_R2 stays high: the behavioural mechanism
+    leaves a nonlinear fingerprint GARCH lacks (positive result).
+  * If both -> ~0.5: once moments are matched, FW and GARCH are
+    indistinguishable even nonlinearly (clean negative).
+  * R2 max d is itself informative: how separated are the nonlinear
+    features after the marginal is forced to match.
+
+[saved to results/harder_pair_tight.txt]
+[2026-06-07 00:41:09] <<< DONE : harder_pair (Finding 2: FW vs GARCH, K=300)  (655s)
+[2026-06-07 00:41:09] >>> START: test_cache_integrity (post-build check)
+Cache-integrity guard (controls/test_cache_integrity.py)
+============================================================
+  [PASS] determinism: same seed -> identical paths  12 paths identical
+  [PASS] round-trip: save -> load == fresh          12 paths identical
+  [PASS] key sensitivity: changing T changes paths  paths differ when T differs
+  [PASS] leverage determinism: same seed -> identical 12 paths identical
+  [PASS] leverage changes output (alpha_lev not ignored) leverage paths differ from symmetric
+============================================================
+5/5 checks passed
+CACHE INTEGRITY OK -- cached runs can be trusted.
+[2026-06-07 00:41:11] <<< DONE : test_cache_integrity (post-build check)  (2s)
+[2026-06-07 00:41:11] >>> START: embedding_diagnostics (m-sweep + nulls)
+================================================================
+EMBEDDING DIAGNOSTICS -- is the rising Delta-with-m real or artifact?
+K=300, T=2500, seed=20240601
+================================================================
+
+generated 300 FW + 300 FW(null) paths; fitting tight GARCH...
+got 300 tight-GARCH paths; running diagnostics (n=300 per group)...
+
+[NULL: FW vs FW (artifact test)]   tau=1
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.529    0.445  -0.083     0.09
+   4    0.529    0.472  -0.056     0.09
+   5    0.529    0.458  -0.071     0.09
+   6    0.529    0.422  -0.106     0.09
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+            d2_r2    0.01    0.13    0.14    0.01
+               d2    0.05    0.01    0.07    0.06
+              det    0.07    0.05    0.05    0.06
+              bds    0.07    0.07    0.07    0.07
+          lyap_r2    0.04    0.01    0.05    0.02
+          lambda1    0.04    0.02    0.02    0.05
+              lam    0.04    0.02    0.02    0.03
+
+[FW vs tight-GARCH -- tau=1, K=300]   tau=1
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.759    0.698  -0.061     0.60
+   4    0.759    0.732  -0.027     0.60
+   5    0.759    0.752  -0.007     0.60
+   6    0.759    0.786  +0.026     0.60
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+              bds    0.45    0.45    0.45    0.45
+              lam    0.18    0.24    0.31    0.39
+               d2    0.01    0.12    0.29    0.37
+          lambda1    0.28    0.36    0.32    0.29
+            d2_r2    0.06    0.05    0.18    0.17
+              det    0.10    0.07    0.02    0.05
+          lyap_r2    0.05    0.09    0.00    0.08
+
+[FW vs tight-GARCH -- tau=2 (overlap test)]   tau=2
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.759    0.730  -0.030     0.60
+   4    0.759    0.760  +0.000     0.60
+   5    0.759    0.799  +0.040     0.60
+   6    0.759    0.829  +0.070     0.60
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+              lam    0.22    0.33    0.44    0.51
+               d2    0.02    0.06    0.28    0.46
+              bds    0.45    0.45    0.45    0.45
+          lambda1    0.38    0.36    0.43    0.41
+              det    0.01    0.11    0.20    0.29
+            d2_r2    0.09    0.03    0.09    0.25
+          lyap_r2    0.17    0.04    0.05    0.06
+
+[NULL: FW vs FW -- tau=2]   tau=2
+   m   AUC_R1   AUC_R2   Delta  clust_d
+   3    0.529    0.503  -0.026     0.09
+   4    0.529    0.465  -0.063     0.09
+   5    0.529    0.488  -0.040     0.09
+   6    0.529    0.501  -0.027     0.09
+   R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6
+            d2_r2    0.04    0.01    0.07    0.15
+          lyap_r2    0.14    0.13    0.15    0.13
+               d2    0.05    0.05    0.10    0.11
+              det    0.06    0.07    0.08    0.08
+              lam    0.02    0.04    0.07    0.07
+              bds    0.07    0.07    0.07    0.07
+          lambda1    0.02    0.02    0.06    0.01
+
+READING:
+  REAL  if NULL stays ~0 across m AND the FW-vs-GARCH rise survives tau=2.
+  ARTIFACT if NULL climbs with m OR the rise vanishes at tau=2.
+  (AUC_R1 must be constant across m within each block -- it ignores the
+   embedding; any variation flags a bug.)
+
+[saved to results/embedding_diagnostics.txt]
+[2026-06-07 01:50:09] <<< DONE : embedding_diagnostics (m-sweep + nulls)  (4138s)
+[2026-06-07 01:50:09] >>> START: embedding_extend (m=7,8 via cache)
+======================================================================
+EMBEDDING EXTENSION -- does the nonlinear advantage plateau or keep rising?
+K=300, T=2500, tau=1, seed=20240601
+======================================================================
+no cache found -- generating paths + fitting tight GARCH (one-time, slow)...
+cached 300 paths per group to results/cache/ (future runs are fast)
+n=300 per group; sweeping m=[7, 8, 6, 5, 4, 3] at tau=1
+(m=7,8 first = the conclusion; m=6 = faithfulness check vs prior +0.083)
+
+   m |  FW-vs-GARCH Delta |   NULL Delta
+--------------------------------------------
+   7 |             +0.046 |       -0.058
+   8 |             +0.073 |       -0.073
+   6 |             +0.026 |       -0.106   <- faithfulness check (must match embedding_diagnostics m=6, same run)
+   5 |             -0.007 |       -0.071
+   4 |             -0.027 |       -0.056
+   3 |             -0.061 |       -0.083
+
+   FW-vs-GARCH -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+              lam    0.18    0.24    0.31    0.39    0.49    0.58
+               d2    0.01    0.12    0.29    0.37    0.47    0.56
+              bds    0.45    0.45    0.45    0.45    0.45    0.45
+          lambda1    0.28    0.36    0.32    0.29    0.33    0.37
+            d2_r2    0.06    0.05    0.18    0.17    0.07    0.26
+              det    0.10    0.07    0.02    0.05    0.10    0.19
+          lyap_r2    0.05    0.09    0.00    0.08    0.10    0.17
+
+   NULL (FW vs FW) -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+            d2_r2    0.01    0.13    0.14    0.01    0.03    0.03
+               d2    0.05    0.01    0.07    0.06    0.12    0.05
+          lyap_r2    0.04    0.01    0.05    0.02    0.10    0.12
+              det    0.07    0.05    0.05    0.06    0.07    0.08
+              bds    0.07    0.07    0.07    0.07    0.07    0.07
+              lam    0.04    0.02    0.02    0.03    0.04    0.06
+          lambda1    0.04    0.02    0.02    0.05    0.04    0.01
+
+Reading: if the FW-vs-GARCH Delta and its leading R2 feature level off at
+high m -> the signal SATURATES (that m is the regime structure's
+dimensionality). If they keep climbing -> unbounded growth, needs a
+mechanism. The NULL Delta and its R2 features must stay flat (~0) at all m,
+confirming high-m does not manufacture separation. The per-feature tables
+show which nonlinear feature carries the trend (not assumed to be laminarity).
+
+[saved to results/embedding_extend.txt]
+[2026-06-07 02:47:36] <<< DONE : embedding_extend (m=7,8 via cache)  (3446s)
+[2026-06-07 02:47:36] >>> START: garch_spec_check (GJR vs plain)
+================================================================
+GJR vs PLAIN GARCH null -- does the asymmetry term matter?
+K=300, T=2500, seed=20240601
+================================================================
+
+generated 300 FW paths
+
+Fitting GJR-GARCH (o=1) and recording the asymmetry parameter gamma...
+  gamma_hat over 300 fits: mean=-0.0017  sd=0.0338  median=-0.0010
+  |gamma_hat| range: [0.0001, 0.0744]
+  fraction with p<0.05 (nominal): 0.47  [treat with caution: GARCH SEs are unreliable under heavy tails]
+  -> The economically meaningful evidence is the MAGNITUDE and SIGN:
+     gamma is tiny (|gamma|<~0.1) and sign-mixed (mean ~ 0), i.e. no
+     systematic leverage -- a real leverage effect gives consistently
+     positive gamma ~ 0.05-0.15. The GJR term is therefore ~idle here.
+
+Fitting plain GARCH (o=0) for the side-by-side comparison...
+
+TIGHT FW-vs-GARCH comparison under each null specification:
+       null spec   AUC_R1   AUC_R2    Delta
+ GJR-GARCH (o=1)    0.759    0.732   -0.027
+plain GARCH (o=0)    0.789    0.752   -0.037
+
+  difference in Delta(R2-R1) between specs: 0.010
+  -> if ~0, the GJR vs plain-GARCH choice is immaterial; the null is
+     effectively a symmetric GARCH and the result is unchanged.
+
+[saved to results/garch_spec_check.txt]
+[2026-06-07 02:57:08] <<< DONE : garch_spec_check (GJR vs plain)  (572s)
+[2026-06-07 02:57:08] >>> START: harder_pair_lev (leverage arm)
+======================================================================
+ASYMMETRIC (LEVERAGE) ARM -- leverage FW vs GJR-GARCH (leverage engaged)
+K=300, T=2500, alpha_lev=50.0, tau=1, seed=20240601
+======================================================================
+no cache for K300_T2500_lev50.0 -- generating asymmetric FW + fitting GJR (one-time)...
+cached 300 paths per group (+ 300 fitted gammas) for K300_T2500_lev50.0
+
+fitted GJR gamma over 300 fits: mean=+0.0654  median=+0.0605  frac>0=0.89
+  (systematically positive => the GJR null's leverage term ENGAGED,
+   i.e. the statistical null is matching FW's leverage, not just its
+   distribution. Contrast: on SYMMETRIC FW this was ~0, sign-mixed.)
+
+n=300 per group; sweeping m=[4, 5, 6, 7, 8, 3] at tau=1
+Compare the FW-vs-GJR Delta column against the SYMMETRIC arm (Sec 6.4):
+  if it tracks the symmetric rise -> behavioural fingerprint survives even
+     when the null matches leverage; if it is LOWER -> the engaged GJR
+     leverage term has absorbed part of what the nonlinear measures saw.
+
+   m   AUC_R1   AUC_R2   Delta  clust_d |  NULL Delta
+------------------------------------------------------------
+   4    0.715    0.699  -0.016     0.46 |      +0.020
+   5    0.715    0.714  -0.001     0.46 |      -0.009
+   6    0.715    0.732  +0.017     0.46 |      +0.020
+   7    0.715    0.715  +0.000     0.46 |      +0.004
+   8    0.715    0.731  +0.016     0.46 |      -0.017
+   3    0.715    0.676  -0.039     0.46 |      +0.025
+
+   FW-vs-GJR (leverage) -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+              lam    0.23    0.28    0.33    0.35    0.40    0.43
+               d2    0.14    0.16    0.15    0.33    0.35    0.38
+              bds    0.36    0.36    0.36    0.36    0.36    0.36
+              det    0.11    0.18    0.26    0.29    0.26    0.25
+          lambda1    0.14    0.21    0.27    0.24    0.09    0.01
+          lyap_r2    0.17    0.27    0.24    0.16    0.04    0.10
+            d2_r2    0.07    0.10    0.09    0.13    0.03    0.11
+
+   NULL (FW vs FW) -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+               d2    0.01    0.02    0.02    0.21    0.02    0.14
+            d2_r2    0.06    0.09    0.07    0.17    0.08    0.13
+              lam    0.15    0.14    0.12    0.12    0.12    0.12
+              det    0.08    0.10    0.12    0.11    0.12    0.15
+          lambda1    0.12    0.04    0.02    0.06    0.11    0.09
+              bds    0.07    0.07    0.07    0.07    0.07    0.07
+          lyap_r2    0.02    0.06    0.04    0.04    0.01    0.03
+
+per-feature separation at m=4 (Cohen's d, sorted):
+   R1  acf_abs_1        d = 0.46
+   R2  bds              d = 0.36
+   R2  lam              d = 0.28
+   R2  lyap_r2          d = 0.27
+   R2  lambda1          d = 0.21
+   R2  det              d = 0.18
+   R2  d2               d = 0.16
+   R1  acf_ret_max      d = 0.13
+   R2  d2_r2            d = 0.10
+   R1  acf_abs_5        d = 0.09
+   R1  acf_abs_10       d = 0.07
+   R1  excess_kurtosis  d = 0.00
+   R1  std              d = 0.00
+   R1  hill_alpha       d = 0.00
+
+Reading: distribution is rank-matched (R1 distributional d ~ 0); the GJR
+null now also carries leverage (gamma>0). Any surviving FW-vs-GJR Delta is
+behavioural structure beyond BOTH distribution and leverage. Compare its
+m-profile to the symmetric arm to see whether matching leverage shrinks it.
+
+[saved to results/harder_pair_lev.txt]
+[2026-06-07 03:48:56] <<< DONE : harder_pair_lev (leverage arm)  (3108s)
+[2026-06-07 03:48:56] >>> START: leverage_sweep (higher K=500)
+*** leverage_sweep resolved K=500, T=2500 (argv=['500', '2500'], env LEV_SWEEP_K=None) ***
+========================================================================
+LEVERAGE SWEEP -- does the nonlinear edge decline smoothly with alpha_lev?
+K=500, T=2500, m_report=[6, 8], tau=1, seed=master
+========================================================================
+Expect: as alpha_lev rises, gamma_hat rises (null engages leverage) and
+DeltaAUC falls from the symmetric ceiling toward ~0 (edge was mis-spec).
+
+alpha_lev  gamma_hat   g>0   dAUC(m6)   dAUC(m8)  lam(m6)  lam(m8)   d2(m6)   d2(m8)    null(m8)
+------------------------------------------------------------------------------------------------
+no cache for K500_T2500_lev0.0 -- generating asymmetric FW + fitting GJR (one-time)...
+cached 500 paths per group (+ 500 fitted gammas) for K500_T2500_lev0.0
+        0    -0.0001  0.49     +0.059     +0.108     0.46     0.59     0.41     0.55      -0.021
+no cache for K500_T2500_lev10.0 -- generating asymmetric FW + fitting GJR (one-time)...
+cached 500 paths per group (+ 500 fitted gammas) for K500_T2500_lev10.0
+       10    +0.0068  0.56     +0.095     +0.131     0.53     0.67     0.35     0.57      -0.001
+no cache for K500_T2500_lev20.0 -- generating asymmetric FW + fitting GJR (one-time)...
+cached 500 paths per group (+ 500 fitted gammas) for K500_T2500_lev20.0
+       20    +0.0210  0.68     +0.084     +0.128     0.46     0.63     0.39     0.56      +0.022
+no cache for K500_T2500_lev30.0 -- generating asymmetric FW + fitting GJR (one-time)...
+cached 500 paths per group (+ 500 fitted gammas) for K500_T2500_lev30.0
+       30    +0.0300  0.81     +0.079     +0.120     0.44     0.56     0.29     0.47      +0.014
+no cache for K500_T2500_lev50.0 -- generating asymmetric FW + fitting GJR (one-time)...
+cached 500 paths per group (+ 500 fitted gammas) for K500_T2500_lev50.0
+       50    +0.0634  0.90     +0.010     +0.016     0.39     0.47     0.33     0.41      +0.004
+
+Reading: a monotone rise in gamma_hat alongside a monotone fall in dAUC
+(toward 0) across alpha_lev demonstrates the nonlinear edge is governed by
+the null's mis-specification for asymmetry -- the airtight version of the
+two-endpoint result. The null column must stay ~0 throughout (no artefact).
+
+[saved to results/leverage_sweep.txt]
+[2026-06-07 06:04:51] <<< DONE : leverage_sweep (higher K=500)  (8155s)
+[2026-06-07 06:04:52] >>> START: residual_tests (symmetric arm + BDS boot)
+======================================================================
+RESIDUAL-BASED COMPLEMENTARY TESTS -- SYMMETRIC arm
+K=300, T=2500, tau=1, seed=20240601
+======================================================================
+
+generated 300 FW paths; fitting tight GARCH null...
+got 300 GARCH paths
+
+----------------------------------------------------------------------
+PART A (#3) -- discrimination on GJR standardized residuals
+----------------------------------------------------------------------
+filtering both arms through their own GJR and extracting residuals...
+got 300 residual series per group; sweeping m=[4, 6, 8]
+
+  (compare to the RAW-returns result: symmetric arm had Delta rising to
+   ~+0.10 by m=8. If Delta ~ 0 here, the edge was all volatility layer.)
+
+   m   AUC_R1   AUC_R2  Delta(resid)
+   4    0.772    0.669        -0.103
+   6    0.772    0.668        -0.104
+   8    0.772    0.675        -0.097
+
+----------------------------------------------------------------------
+PART B (#2) -- BDS adequacy: raw FW returns vs FW GJR residuals
+----------------------------------------------------------------------
+
+  Asymptotic BDS statistic (m=2), mean +/- sd across paths
+  [reference only -- asymptotic SEs unreliable under heavy tails]:
+    raw FW returns      :    6.20 +/- 2.59
+    FW GJR residuals    :   -0.19 +/- 1.03
+    -> filtering removes ~97% of the raw BDS magnitude
+
+  Bootstrap (permutation) BDS test [primary -- heavy-tail robust]:
+    raw FW returns      : rejects iid in 92% of 60 paths  (median p=0.005)
+    FW GJR residuals    : rejects iid in 3% of 60 paths  (median p=0.432)
+  A high raw rejection rate collapsing to near the 5% nominal level on
+  residuals = GJR captured the dependence (the raw 'nonlinearity' was
+  volatility clustering). A residual rejection rate still well above 5%
+  would indicate leftover structure GARCH missed. This bootstrap result,
+  not the asymptotic statistic above, is the one to report.
+
+[saved to results/residual_tests.txt]
+[2026-06-07 06:43:00] <<< DONE : residual_tests (symmetric arm + BDS boot)  (2288s)
+[2026-06-07 06:43:00] >>> START: residual_tests (leverage arm + BDS boot)
+======================================================================
+RESIDUAL-BASED COMPLEMENTARY TESTS -- LEVERAGE (alpha_lev=50.0) arm
+K=300, T=2500, tau=1, seed=20240601
+======================================================================
+
+generated 300 FW paths; fitting tight GARCH null...
+got 300 GARCH paths
+
+----------------------------------------------------------------------
+PART A (#3) -- discrimination on GJR standardized residuals
+----------------------------------------------------------------------
+filtering both arms through their own GJR and extracting residuals...
+got 300 residual series per group; sweeping m=[4, 6, 8]
+
+  (compare to the RAW-returns result: symmetric arm had Delta rising to
+   ~+0.10 by m=8. If Delta ~ 0 here, the edge was all volatility layer.)
+
+   m   AUC_R1   AUC_R2  Delta(resid)
+   4    0.773    0.691        -0.082
+   6    0.773    0.689        -0.085
+   8    0.773    0.679        -0.095
+
+----------------------------------------------------------------------
+PART B (#2) -- BDS adequacy: raw FW returns vs FW GJR residuals
+----------------------------------------------------------------------
+
+  Asymptotic BDS statistic (m=2), mean +/- sd across paths
+  [reference only -- asymptotic SEs unreliable under heavy tails]:
+    raw FW returns      :    5.77 +/- 2.05
+    FW GJR residuals    :    0.41 +/- 1.04
+    -> filtering removes ~93% of the raw BDS magnitude
+
+  Bootstrap (permutation) BDS test [primary -- heavy-tail robust]:
+    raw FW returns      : rejects iid in 93% of 60 paths  (median p=0.005)
+    FW GJR residuals    : rejects iid in 8% of 60 paths  (median p=0.505)
+  A high raw rejection rate collapsing to near the 5% nominal level on
+  residuals = GJR captured the dependence (the raw 'nonlinearity' was
+  volatility clustering). A residual rejection rate still well above 5%
+  would indicate leftover structure GARCH missed. This bootstrap result,
+  not the asymptotic statistic above, is the one to report.
+
+[saved to results/residual_tests_lev50.txt]
+[2026-06-07 07:21:26] <<< DONE : residual_tests (leverage arm + BDS boot)  (2306s)
+
+[2026-06-07 07:21:26] ================ STAGE 3  alternative-null robustness ================
+[2026-06-07 07:21:26] >>> START: egarch_null (EGARCH leverage-arm check)
+================================================================
+EGARCH alternative-null robustness check (leverage arm)
+K=300  T=2500  alpha_lev=50.0  null=EGARCH(1,1,1)-t
+================================================================
+loaded cached leverage paths for K300_T2500_lev50.0 from results/cache/
+loaded 300 leverage FW paths (alpha_lev=50.0)
+reference GJR gamma on these paths: mean=+0.0654
+
+fitting EGARCH null (one-time) ...
+EGARCH asymmetry gamma: mean=-0.0461  (88% negative -> equity leverage sign)
+
+FW(leverage) vs EGARCH null, by embedding dimension m:
+  m   AUC_R1   AUC_R2     dAUC  clust_d  A-vs-A dAUC
+  4    0.721    0.779   +0.058     0.52       +0.020
+  5    0.721    0.805   +0.084     0.52       -0.009
+  6    0.721    0.825   +0.104     0.52       +0.020
+  7    0.721    0.838   +0.117     0.52       +0.004
+  8    0.721    0.867   +0.146     0.52       -0.017
+  3    0.721    0.745   +0.025     0.52       +0.025
+
+Interpretation: dAUC near zero across m (matching the GJR leverage
+arm) indicates the collapse is robust to the asymmetric-null form;
+the A-vs-A column should stay near zero (calibration).
+================================================================
+[2026-06-07 08:08:34] <<< DONE : egarch_null (EGARCH leverage-arm check)  (2828s)
+
+[2026-06-07 08:08:34] ================ COMPLETE ================
+[2026-06-07 08:08:34] all stages finished. Result files in results/:
+    results/egarch_null.txt
+    results/embedding_diagnostics.txt
+    results/embedding_extend.txt
+    results/garch_spec_check.txt
+    results/harder_pair_lev.txt
+    results/harder_pair_tight.txt
+    results/leverage_sweep.txt
+    results/residual_tests.txt
+    results/residual_tests_lev50.txt
+    results/robustness.txt
+[2026-06-07 08:08:34] ########## FULL REGENERATION END ##########

@@ -1,0 +1,45 @@
+==============================================================================
+STEP 1 -- EGARCH null pathology check (is the edge a simulation artifact?)
+K=300  T=2500  alpha_lev=50.0  seed=20240601
+==============================================================================
+loaded 300 FW leverage paths (cached)
+
+fitting GJR null (native, rank_match=False) ...
+  got 300 GJR paths
+fitting EGARCH null (native, rank_match=False, slow) ...
+  got 300 EGARCH paths
+
+------------------------------------------------------------------------------
+FITTED PERSISTENCE  (stationarity needs < 1; near 1 = near-explosive)
+------------------------------------------------------------------------------
+  GJR   alpha+beta+gamma/2 : mean=0.971  med=0.981  max=1.000  frac>0.98=0.53
+  EGARCH |beta[1]| (logvar): mean=0.972  med=0.984  max=1.000  frac>0.98=0.58
+
+------------------------------------------------------------------------------
+SIMULATED-PATH HEALTH  (compare EGARCH to FW and GJR)
+------------------------------------------------------------------------------
+  FW (target)   excess kurtosis  mean=   1.91  med=   1.90  max=    4.88
+                max|r|/std       mean=   5.51  med=   5.37  max=    9.99
+                non-finite/degenerate paths: 0 of 300
+  GJR null      excess kurtosis  mean=   1.70  med=   1.35  max=   10.11
+                max|r|/std       mean=   5.40  med=   5.21  max=   10.44
+                non-finite/degenerate paths: 0 of 300
+  EGARCH null   excess kurtosis  mean=   1.48  med=   1.28  max=    8.20
+                max|r|/std       mean=   5.29  med=   5.03  max=    9.81
+                non-finite/degenerate paths: 0 of 300
+
+  FW's largest single max|r|/std across all paths: 9.99
+  GJR null paths exceeding it   : 2 of 300
+  EGARCH null paths exceeding it: 0 of 300
+
+  freak paths (non-finite or excess kurtosis > 15):   GJR 0 of 300   EGARCH 0 of 300
+  NOTE: persistence railing to the 0.98-1.0 edge afflicts BOTH nulls at short T (a
+  small-sample fitting effect); it is only meaningful if EGARCH is railed MORE than GJR.
+
+==============================================================================
+VERDICT: CLEAN relative to GJR -- EGARCH is no more pathological than the GJR
+  control (comparable freak-path count, persistence, and path health), yet
+  only EGARCH's edge survives. So the edge is NOT a simulation artifact; the
+  puzzle is real -> proceed to Step 2 (localise which feature carries the gap)
+  and Step 3 (higher-order volatility statistics).
+==============================================================================

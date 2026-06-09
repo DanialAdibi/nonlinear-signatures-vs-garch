@@ -1,0 +1,44 @@
+======================================================================
+EMBEDDING EXTENSION -- does the nonlinear advantage plateau or keep rising?
+K=300, T=2500, tau=1, seed=20240601
+======================================================================
+no cache found -- generating paths + fitting tight GARCH (one-time, slow)...
+cached 300 paths per group to results/cache/ (future runs are fast)
+n=300 per group; sweeping m=[7, 8, 6, 5, 4, 3] at tau=1
+(m=7,8 first = the conclusion; m=6 = faithfulness check vs prior +0.083)
+
+   m |  FW-vs-GARCH Delta |   NULL Delta
+--------------------------------------------
+   7 |             +0.046 |       -0.058
+   8 |             +0.073 |       -0.073
+   6 |             +0.026 |       -0.106   <- faithfulness check (must match embedding_diagnostics m=6, same run)
+   5 |             -0.007 |       -0.071
+   4 |             -0.027 |       -0.056
+   3 |             -0.061 |       -0.083
+
+   FW-vs-GARCH -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+              lam    0.18    0.24    0.31    0.39    0.49    0.58
+               d2    0.01    0.12    0.29    0.37    0.47    0.56
+              bds    0.45    0.45    0.45    0.45    0.45    0.45
+          lambda1    0.28    0.36    0.32    0.29    0.33    0.37
+            d2_r2    0.06    0.05    0.18    0.17    0.07    0.26
+              det    0.10    0.07    0.02    0.05    0.10    0.19
+          lyap_r2    0.05    0.09    0.00    0.08    0.10    0.17
+
+   NULL (FW vs FW) -- R2 per-feature Cohen's d by m:
+          feature     m=3     m=4     m=5     m=6     m=7     m=8
+            d2_r2    0.01    0.13    0.14    0.01    0.03    0.03
+               d2    0.05    0.01    0.07    0.06    0.12    0.05
+          lyap_r2    0.04    0.01    0.05    0.02    0.10    0.12
+              det    0.07    0.05    0.05    0.06    0.07    0.08
+              bds    0.07    0.07    0.07    0.07    0.07    0.07
+              lam    0.04    0.02    0.02    0.03    0.04    0.06
+          lambda1    0.04    0.02    0.02    0.05    0.04    0.01
+
+Reading: if the FW-vs-GARCH Delta and its leading R2 feature level off at
+high m -> the signal SATURATES (that m is the regime structure's
+dimensionality). If they keep climbing -> unbounded growth, needs a
+mechanism. The NULL Delta and its R2 features must stay flat (~0) at all m,
+confirming high-m does not manufacture separation. The per-feature tables
+show which nonlinear feature carries the trend (not assumed to be laminarity).

@@ -1,0 +1,71 @@
+==============================================================================
+STEP 2 -- localising the FW-vs-EGARCH gap (which feature carries dAUC?)
+K=300  T=2500  alpha_lev=50.0  m_grid=(3, 5, 8)  null=EGARCH(1,1,1)-t
+dAUC = AUC(REFEREE_2 nonlinear-only) - AUC(REFEREE_1 moments-only)
+==============================================================================
+loaded 300 FW leverage paths (cached)
+fitting EGARCH null (one-time, rank_match=True, slow) ...
+  paired 300 FW vs EGARCH paths; EGARCH gamma mean=-0.0461
+
+------------------------------------------------------------------------------
+m = 3    AUC_R1=0.721   AUC_R2=0.745   dAUC=+0.025
+------------------------------------------------------------------------------
+  feature     single-AUC   Cohen_d   LOO drop
+  lam              0.640      0.51     +0.013
+  d2               0.603      0.38     +0.008
+  bds              0.594      0.30     +0.088
+  det              0.589      0.39     +0.018
+  d2_r2            0.545      0.18     -0.001
+  lyap_r2          0.537      0.13     -0.001
+  lambda1          0.528      0.08     -0.001
+  best single moment (REFEREE_1): acf_abs_1 AUC=0.652   (near 0.5 confirms moments do not carry the gap)
+
+------------------------------------------------------------------------------
+m = 5    AUC_R1=0.721   AUC_R2=0.805   dAUC=+0.084
+------------------------------------------------------------------------------
+  feature     single-AUC   Cohen_d   LOO drop
+  lam              0.704      0.74     +0.015
+  det              0.636      0.54     +0.006
+  d2               0.634      0.51     +0.005
+  bds              0.594      0.30     +0.104
+  d2_r2            0.560      0.23     +0.000
+  lambda1          0.524      0.13     +0.002
+  lyap_r2          0.455      0.01     -0.001
+  best single moment (REFEREE_1): acf_abs_1 AUC=0.652   (near 0.5 confirms moments do not carry the gap)
+
+------------------------------------------------------------------------------
+m = 8    AUC_R1=0.721   AUC_R2=0.867   dAUC=+0.146
+------------------------------------------------------------------------------
+  feature     single-AUC   Cohen_d   LOO drop
+  lam              0.738      0.88     +0.005
+  d2               0.715      0.82     +0.045
+  det              0.648      0.60     -0.001
+  bds              0.594      0.30     +0.088
+  d2_r2            0.578      0.26     +0.019
+  lyap_r2          0.538      0.13     -0.001
+  lambda1          0.524      0.14     -0.000
+  best single moment (REFEREE_1): acf_abs_1 AUC=0.652   (near 0.5 confirms moments do not carry the gap)
+
+==============================================================================
+CARRIER SUMMARY -- single-feature AUC across m (growth tracks dAUC?)
+==============================================================================
+  dAUC: m3=+0.025  m5=+0.084  m8=+0.146
+  feature         m3      m5      m8     rise
+  lam          0.640   0.704   0.738   +0.098
+  d2           0.603   0.634   0.715   +0.111
+  det          0.589   0.636   0.648   +0.060
+  bds          0.594   0.594   0.594   +0.000
+  d2_r2        0.545   0.560   0.578   +0.033
+  lyap_r2      0.537   0.455   0.538   +0.001
+  lambda1      0.528   0.524   0.524   -0.004
+
+==============================================================================
+VERDICT: at the peak (m=8) the leading feature is 'lam' (single-AUC=0.738).
+  Fastest-growing feature across m=3->8: 'd2' (rise +0.111).
+  Leader and fastest-grower differ ('lam' vs 'd2'); the gap is shared.
+  Family -> recurrence/laminar structure (volatility-regime persistence).
+  Step 3 should target this property: e.g. if geometry, compare attractor
+  dimension/divergence; if recurrence, compare volatility-of-volatility,
+  long-lag |r| memory, and high-vol run-lengths on FW vs GJR vs EGARCH to find
+  the statistic where EGARCH departs from FW but GJR does not.
+==============================================================================

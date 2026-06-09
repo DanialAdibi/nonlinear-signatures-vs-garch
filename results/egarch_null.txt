@@ -1,0 +1,23 @@
+================================================================
+EGARCH alternative-null robustness check (leverage arm)
+K=300  T=2500  alpha_lev=50.0  null=EGARCH(1,1,1)-t
+================================================================
+loaded 300 leverage FW paths (alpha_lev=50.0)
+reference GJR gamma on these paths: mean=+0.0654
+
+fitting EGARCH null (one-time) ...
+EGARCH asymmetry gamma: mean=-0.0461  (88% negative -> equity leverage sign)
+
+FW(leverage) vs EGARCH null, by embedding dimension m:
+  m   AUC_R1   AUC_R2     dAUC  clust_d  A-vs-A dAUC
+  4    0.721    0.779   +0.058     0.52       +0.020
+  5    0.721    0.805   +0.084     0.52       -0.009
+  6    0.721    0.825   +0.104     0.52       +0.020
+  7    0.721    0.838   +0.117     0.52       +0.004
+  8    0.721    0.867   +0.146     0.52       -0.017
+  3    0.721    0.745   +0.025     0.52       +0.025
+
+Interpretation: dAUC near zero across m (matching the GJR leverage
+arm) indicates the collapse is robust to the asymmetric-null form;
+the A-vs-A column should stay near zero (calibration).
+================================================================

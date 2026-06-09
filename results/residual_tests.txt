@@ -1,0 +1,40 @@
+======================================================================
+RESIDUAL-BASED COMPLEMENTARY TESTS -- SYMMETRIC arm
+K=300, T=2500, tau=1, seed=20240601
+======================================================================
+
+generated 300 FW paths; fitting tight GARCH null...
+got 300 GARCH paths
+
+----------------------------------------------------------------------
+PART A (#3) -- discrimination on GJR standardized residuals
+----------------------------------------------------------------------
+filtering both arms through their own GJR and extracting residuals...
+got 300 residual series per group; sweeping m=[4, 6, 8]
+
+  (compare to the RAW-returns result: symmetric arm had Delta rising to
+   ~+0.10 by m=8. If Delta ~ 0 here, the edge was all volatility layer.)
+
+   m   AUC_R1   AUC_R2  Delta(resid)
+   4    0.772    0.669        -0.103
+   6    0.772    0.668        -0.104
+   8    0.772    0.675        -0.097
+
+----------------------------------------------------------------------
+PART B (#2) -- BDS adequacy: raw FW returns vs FW GJR residuals
+----------------------------------------------------------------------
+
+  Asymptotic BDS statistic (m=2), mean +/- sd across paths
+  [reference only -- asymptotic SEs unreliable under heavy tails]:
+    raw FW returns      :    6.20 +/- 2.59
+    FW GJR residuals    :   -0.19 +/- 1.03
+    -> filtering removes ~97% of the raw BDS magnitude
+
+  Bootstrap (permutation) BDS test [primary -- heavy-tail robust]:
+    raw FW returns      : rejects iid in 92% of 60 paths  (median p=0.005)
+    FW GJR residuals    : rejects iid in 3% of 60 paths  (median p=0.432)
+  A high raw rejection rate collapsing to near the 5% nominal level on
+  residuals = GJR captured the dependence (the raw 'nonlinearity' was
+  volatility clustering). A residual rejection rate still well above 5%
+  would indicate leftover structure GARCH missed. This bootstrap result,
+  not the asymptotic statistic above, is the one to report.
